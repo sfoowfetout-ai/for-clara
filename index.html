@@ -11,8 +11,6 @@
       --shadow: 0 24px 70px rgba(0,0,0,.40);
       --radius: 18px;
       --stroke: rgba(255,255,255,.22);
-      --glass: rgba(0,0,0,.14);
-      --glass2: rgba(255,255,255,.12);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -50,7 +48,7 @@
       );
     }
     header{
-      padding:18px 18px 10px;
+      padding:16px 18px 10px;
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
@@ -58,7 +56,7 @@
       flex-wrap:wrap;
     }
     .title h1{ margin:0 0 6px; font-size: clamp(22px, 2.2vw, 32px); letter-spacing:-.02em; line-height:1.1; }
-    .title p{ margin:0; color:var(--mutedInv); font-size:14.5px; line-height:1.5; max-width: 880px; }
+    .title p{ margin:0; color:var(--mutedInv); font-size:14px; line-height:1.5; max-width: 900px; }
     .chips{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; justify-content:flex-end; }
     .chip{
       border:1px solid rgba(255,255,255,.26);
@@ -87,18 +85,10 @@
       justify-content:space-between;
       gap:10px;
       flex-wrap:wrap;
-      color: rgba(255,255,255,.90);
+      color: rgba(255,255,255,.88);
       font-size:12.5px;
     }
-    .hud{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-    .stat{
-      border:1px solid rgba(255,255,255,.22);
-      background: rgba(0,0,0,.14);
-      padding:8px 10px;
-      border-radius:12px;
-      min-width: 108px;
-    }
-    .stat b{color:rgba(255,255,255,.99)}
+    .hint{ opacity:.92; font-size:12px; color: rgba(255,255,255,.78); max-width: 720px; }
     .buttons{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     button{
       border:1px solid rgba(255,255,255,.28);
@@ -115,7 +105,6 @@
     button:active{ transform: scale(.98); }
     .primary{ background: rgba(255,47,90,.20); border-color: rgba(255,47,90,.45); }
     .primary:hover{ background: rgba(255,47,90,.30); border-color: rgba(255,47,90,.60); }
-    .hint{ opacity:.92; font-size:12px; color: rgba(255,255,255,.78); max-width: 560px; }
   </style>
 </head>
 
@@ -128,33 +117,21 @@
         <div class="title">
           <h1>Clara Runner</h1>
           <p>
-            Flèches gauche/droite : changer de voie. Espace : sauter et démarrer.
-            P : pause. R : recommencer. Les fleurs donnent des points et boostent le multiplicateur.
-            Soufiane donne une seconde vie (max 2).
+            Flèches gauche/droite : changer de voie. Espace : démarrer, sauter, restart.
+            P : pause. Fleurs = points + combo. Soufiane = seconde vie (max 2).
           </p>
         </div>
         <div class="chips">
           <span class="chip">Left/Right: lane</span>
-          <span class="chip">Space: jump/start</span>
+          <span class="chip">Space: start/jump/restart</span>
           <span class="chip">P: pause</span>
-          <span class="chip">R: restart</span>
         </div>
       </header>
 
       <canvas id="game" width="1100" height="640"></canvas>
 
       <div class="footer">
-        <div class="hud">
-          <div class="stat">Status: <b id="status">Loading</b></div>
-          <div class="stat">Score: <b id="score">0</b></div>
-          <div class="stat">Best: <b id="best">0</b></div>
-          <div class="stat">Flowers: <b id="flowers">0</b></div>
-          <div class="stat">Level: <b id="level">1</b></div>
-          <div class="stat">Multiplier: <b id="mult">x1.0</b></div>
-          <div class="stat">Lives: <b id="lives">1/2</b></div>
-          <span class="hint" id="hint"></span>
-        </div>
-
+        <div class="hint" id="hint"></div>
         <div class="buttons">
           <button class="primary" id="btnRestart">Restart</button>
           <button id="btnMusic">Play music</button>
@@ -164,8 +141,8 @@
   </main>
 
   <script>
-    // Bump this if images/audio look cached
-    const ASSET_VERSION = "v40";
+    // Increase to bust cache if needed
+    const ASSET_VERSION = "v50";
 
     const ASSETS = {
       clara: `clara.png?${ASSET_VERSION}`,
@@ -181,27 +158,19 @@
 
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
-
     const ui = {
-      status: document.getElementById("status"),
-      score: document.getElementById("score"),
-      best: document.getElementById("best"),
-      flowers: document.getElementById("flowers"),
-      level: document.getElementById("level"),
-      mult: document.getElementById("mult"),
-      lives: document.getElementById("lives"),
       hint: document.getElementById("hint"),
       btnRestart: document.getElementById("btnRestart"),
       btnMusic: document.getElementById("btnMusic"),
     };
 
-    const BEST_KEY = "clara_runner_best_v40";
-    let best = Number(localStorage.getItem(BEST_KEY) || 0);
-    ui.best.textContent = String(best);
-
     const W = canvas.width, H = canvas.height;
 
-    // Audio (user gesture)
+    // Best score
+    const BEST_KEY = "clara_runner_best_v50";
+    let best = Number(localStorage.getItem(BEST_KEY) || 0);
+
+    // Audio
     const audio = new Audio();
     audio.loop = true;
     audio.preload = "auto";
@@ -210,7 +179,7 @@
     audio.addEventListener("canplaythrough", () => musicReady = true);
     audio.addEventListener("error", () => musicReady = false);
 
-    // Image loader
+    // Images
     function loadImage(src){
       return new Promise((resolve) => {
         const img = new Image();
@@ -246,23 +215,17 @@
       if (!IMG.soufiane) problems.push("Missing soufiane.png");
       if (!IMG.obstacle) problems.push("Missing obstacle image (badvibes/ahmed/obstacle)");
 
-      if (problems.length){
-        ui.hint.textContent = problems.join(" | ");
-        ui.status.textContent = "Fallback";
-      } else {
-        ui.hint.textContent = "Obstacle loaded: " + IMG.obstacleSrc.split("?")[0];
-        ui.status.textContent = "Press Space to Start";
-      }
+      ui.hint.textContent = problems.length ? problems.join(" | ") : ("Obstacle loaded: " + IMG.obstacleSrc.split("?")[0]);
     }
 
-    // Road perspective
+    // Perspective road
     const road = {
       cx: W/2,
-      topY: 100,
-      botY: H - 56,
+      topY: 110,
+      botY: H - 58,
       topW: W * 0.15,
       botW: W * 0.80,
-      curbPad: 22, // sidewalk width at bottom (scaled with perspective)
+      curbPad: 26
     };
     const lanes = [-1, 0, 1];
     const laneIndex = (lane) => lane === -1 ? 0 : (lane === 0 ? 1 : 2);
@@ -282,15 +245,24 @@
       return left + lw*(laneIndex(lane) + 0.5);
     }
 
+    // Helpers
+    function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+    function rand(a,b){ return a + Math.random()*(b-a); }
+    function lerp(a,b,t){ return a + (b-a)*t; }
+    function circleHit(ax, ay, ar, bx, by, br){
+      const dx = ax-bx, dy = ay-by;
+      return (dx*dx + dy*dy) <= (ar+br)*(ar+br);
+    }
+
     // Game state
     const game = {
-      state: "start",
+      state: "start", // start | play | pause | over
       lastT: performance.now(),
       t: 0,
       scroll: 0,
-      speed: 300,
+      speed: 320,
       spawnTimer: 0,
-      spawnEvery: 0.96,
+      spawnEvery: 0.95,
 
       score: 0,
       flowers: 0,
@@ -300,19 +272,19 @@
       combo: 0,
       lastFlowerTime: 0,
 
-      lives: 1,       // 1..2
-      invuln: 0,      // seconds
+      lives: 1,
+      invuln: 0,
       shake: 0,
 
-      // anti-farming for life
-      lastLifeGainTime: -999
+      lastLifeGainTime: -999,
+      hudPulse: 0
     };
 
     // Player
     const player = {
       lane: 0,
-      y: H - 178,
-      x: laneX(0, H - 178),
+      y: H - 180,
+      x: laneX(0, H - 180),
       r: 36,
 
       switching: false,
@@ -330,7 +302,7 @@
 
     // Entities
     let obstacles = [];
-    let pickups = []; // {type:"flower"|"life", lane, y, r}
+    let pickups = []; // {type:"flower"|"life", lane, y}
 
     // Controls
     function requestLane(delta){
@@ -345,30 +317,31 @@
       player.switchT = 0;
       player.lane = next;
     }
+
     function tryJump(){
       if (game.state !== "play") return;
       if (player.jumping) return;
       player.jumping = true;
       player.vz = player.jumpPower;
     }
+
     function togglePause(){
       if (game.state === "play"){
         game.state = "pause";
-        ui.status.textContent = "Paused";
       } else if (game.state === "pause"){
         game.state = "play";
-        ui.status.textContent = "Playing";
       }
     }
+
     function restart(){
       obstacles = [];
       pickups = [];
 
       game.state = "start";
       game.scroll = 0;
-      game.speed = 300;
+      game.speed = 320;
       game.spawnTimer = 0;
-      game.spawnEvery = 0.96;
+      game.spawnEvery = 0.95;
 
       game.score = 0;
       game.flowers = 0;
@@ -381,7 +354,9 @@
       game.lives = 1;
       game.invuln = 0;
       game.shake = 0;
+
       game.lastLifeGainTime = -999;
+      game.hudPulse = 0;
 
       player.lane = 0;
       player.x = laneX(0, player.y);
@@ -389,8 +364,6 @@
       player.jumping = false;
       player.z = 0;
       player.vz = 0;
-
-      ui.status.textContent = "Press Space to Start";
     }
 
     function onHit(){
@@ -400,24 +373,20 @@
         game.lives -= 1;
         game.invuln = 1.15;
         game.shake = 10;
-
-        // remove close obstacles to avoid instant chain hits
-        obstacles = obstacles.filter(o => o.y < road.topY + 40 || o.y > player.y + 60);
-
-        // penalty
         game.combo = 0;
         game.mult = 1.0;
+
+        // remove close obstacles to prevent instant double-hit
+        obstacles = obstacles.filter(o => o.y < road.topY + 40 || o.y > player.y + 70);
         return;
       }
 
       game.state = "over";
-      ui.status.textContent = "Game Over";
       game.shake = 12;
 
       if (game.score > best){
         best = game.score;
         localStorage.setItem(BEST_KEY, String(best));
-        ui.best.textContent = String(best);
       }
     }
 
@@ -427,477 +396,58 @@
       if (k === "arrowleft") requestLane(-1);
       if (k === "arrowright") requestLane(+1);
 
-      if (k === " "){
-        e.preventDefault();
-        if (game.state === "start"){
-          game.state = "play";
-          ui.status.textContent = "Playing";
-          return;
-        }
-        if (game.state === "play") tryJump();
-      }
-
       if (k === "p"){
         if (game.state === "play" || game.state === "pause") togglePause();
       }
 
-      if (k === "r") restart();
+      if (k === " "){
+        e.preventDefault();
+
+        if (game.state === "start"){
+          game.state = "play";
+          return;
+        }
+
+        if (game.state === "over"){
+          restart();
+          game.state = "play";
+          return;
+        }
+
+        if (game.state === "play"){
+          tryJump();
+          return;
+        }
+      }
     });
 
-    ui.btnRestart.addEventListener("click", restart);
+    ui.btnRestart.addEventListener("click", () => {
+      restart();
+      game.state = "play";
+    });
 
     ui.btnMusic.addEventListener("click", async () => {
       if (!musicReady){
-        ui.status.textContent = "No music.mp3 found";
+        ui.hint.textContent = (ui.hint.textContent ? ui.hint.textContent + " | " : "") + "No music.mp3 found";
         return;
       }
       if (audio.paused){
         try { await audio.play(); ui.btnMusic.textContent = "Stop music"; }
-        catch { ui.status.textContent = "Click again to enable audio"; }
+        catch { ui.hint.textContent = "Click again to enable audio"; }
       } else {
         audio.pause();
         ui.btnMusic.textContent = "Play music";
       }
     });
 
-    // Helpers
-    function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
-    function rand(a,b){ return a + Math.random()*(b-a); }
-    function lerp(a,b,t){ return a + (b-a)*t; }
-    function circleHit(ax, ay, ar, bx, by, br){
-      const dx = ax-bx, dy = ay-by;
-      return (dx*dx + dy*dy) <= (ar+br)*(ar+br);
-    }
-
-    // Drawing helpers
-    function drawCircleImage(img, x, y, r){
-      const size = r * 2.35;
-      ctx.save();
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI*2);
-      ctx.closePath();
-      ctx.clip();
-      ctx.drawImage(img, x - size/2, y - size/2, size, size);
-      ctx.restore();
-
-      ctx.save();
-      ctx.strokeStyle = "rgba(255,255,255,.25)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI*2);
-      ctx.stroke();
-      ctx.restore();
-    }
-
-    // Environment: no buildings. Clean sidewalks + lamps + banners.
-    const env = {
-      lamps: [],
-      banners: [],
-      init(){
-        this.lamps = [];
-        this.banners = [];
-
-        for (let i=0;i<22;i++){
-          this.lamps.push({
-            edge: Math.random() < 0.5 ? -1 : 1,
-            y: rand(road.topY+40, road.botY-120),
-            depth: rand(0.45, 1.0)
-          });
-        }
-        for (let i=0;i<12;i++){
-          this.banners.push({
-            y: rand(road.topY+70, road.botY-260),
-            depth: rand(0.50, 1.0),
-            type: Math.random() < 0.6 ? "catalan" : "spain"
-          });
-        }
-      }
-    };
-
-    function drawFlagCloth(x, y, w, h, type, alpha){
-      ctx.save();
-      ctx.globalAlpha = alpha;
-
-      // wave clip
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(x+w*0.55, y+h*0.20, x+w, y+h*0.08);
-      ctx.quadraticCurveTo(x+w*0.55, y+h*0.60, x+w, y+h*0.42);
-      ctx.quadraticCurveTo(x+w*0.55, y+h*0.94, x+w, y+h*0.78);
-      ctx.lineTo(x+w, y+h);
-      ctx.lineTo(x, y+h);
-      ctx.closePath();
-      ctx.clip();
-
-      if (type === "catalan"){
-        const stripes = 6;
-        for (let i=0;i<stripes;i++){
-          ctx.fillStyle = (i%2===0) ? "rgba(255,209,102,.95)" : "rgba(255,47,90,.95)";
-          ctx.fillRect(x, y + i*(h/stripes), w, (h/stripes));
-        }
-      } else {
-        ctx.fillStyle = "rgba(255,47,90,.95)";
-        ctx.fillRect(x, y, w, h*0.28);
-        ctx.fillStyle = "rgba(255,209,102,.95)";
-        ctx.fillRect(x, y+h*0.28, w, h*0.44);
-        ctx.fillStyle = "rgba(255,47,90,.95)";
-        ctx.fillRect(x, y+h*0.72, w, h*0.28);
-      }
-
-      ctx.restore();
-      ctx.restore();
-    }
-
-    function drawSkyGlow(){
-      ctx.save();
-      const g = ctx.createLinearGradient(0, 0, 0, H);
-      g.addColorStop(0.00, "rgba(125,211,252,.22)");
-      g.addColorStop(0.40, "rgba(167,139,250,.16)");
-      g.addColorStop(0.78, "rgba(251,113,133,.10)");
-      g.addColorStop(1.00, "rgba(0,0,0,.05)");
-      ctx.fillStyle = g;
-      ctx.fillRect(0,0,W,H);
-      ctx.restore();
-    }
-
-    function drawRoadAndSidewalk(){
-      // Road polygon
-      const topL = { x: road.cx - road.topW/2, y: road.topY };
-      const topR = { x: road.cx + road.topW/2, y: road.topY };
-      const botL = { x: road.cx - road.botW/2, y: road.botY };
-      const botR = { x: road.cx + road.botW/2, y: road.botY };
-
-      // Sidewalks (curbs) as expanded polygon strips
-      ctx.save();
-
-      // sidewalks glow
-      ctx.globalAlpha = 0.22;
-      ctx.fillStyle = "rgba(255,255,255,1)";
-      ctx.beginPath();
-      ctx.moveTo(topL.x - 10, topL.y);
-      ctx.lineTo(topL.x + 2, topL.y);
-      ctx.lineTo(botL.x + 2, botL.y);
-      ctx.lineTo(botL.x - road.curbPad, botL.y);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.moveTo(topR.x - 2, topR.y);
-      ctx.lineTo(topR.x + 10, topR.y);
-      ctx.lineTo(botR.x + road.curbPad, botR.y);
-      ctx.lineTo(botR.x - 2, botR.y);
-      ctx.closePath();
-      ctx.fill();
-      ctx.globalAlpha = 1;
-
-      // sidewalks main
-      ctx.fillStyle = "rgba(255,255,255,.10)";
-      ctx.beginPath();
-      ctx.moveTo(topL.x - 12, topL.y);
-      ctx.lineTo(topL.x + 2, topL.y);
-      ctx.lineTo(botL.x + 2, botL.y);
-      ctx.lineTo(botL.x - road.curbPad, botL.y);
-      ctx.closePath();
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.moveTo(topR.x - 2, topR.y);
-      ctx.lineTo(topR.x + 12, topR.y);
-      ctx.lineTo(botR.x + road.curbPad, botR.y);
-      ctx.lineTo(botR.x - 2, botR.y);
-      ctx.closePath();
-      ctx.fill();
-
-      // Road fill
-      ctx.fillStyle = "rgba(0,0,0,.20)";
-      ctx.beginPath();
-      ctx.moveTo(topL.x, topL.y);
-      ctx.lineTo(topR.x, topR.y);
-      ctx.lineTo(botR.x, botR.y);
-      ctx.lineTo(botL.x, botL.y);
-      ctx.closePath();
-      ctx.fill();
-
-      // Road edge
-      ctx.strokeStyle = "rgba(255,255,255,.22)";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(topL.x, topL.y);
-      ctx.lineTo(topR.x, topR.y);
-      ctx.lineTo(botR.x, botR.y);
-      ctx.lineTo(botL.x, botL.y);
-      ctx.closePath();
-      ctx.stroke();
-
-      // Lane dashes
-      ctx.strokeStyle = "rgba(255,255,255,.28)";
-      ctx.lineWidth = 2;
-
-      const dash = 22, gap = 18;
-      const offset = (game.t * game.speed * 0.11) % (dash+gap);
-      ctx.setLineDash([dash, gap]);
-      ctx.lineDashOffset = -offset;
-
-      const step = 16;
-      for (let y = road.topY; y <= road.botY; y += step){
-        const left = roadLeftAt(y);
-        const w = roadWAt(y);
-        const lw = w/3;
-        const x1 = left + lw;
-        const x2 = left + lw*2;
-        const persp = (y - road.topY) / (road.botY - road.topY);
-        const seg = 10 + persp*26;
-
-        ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1, y + seg); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(x2, y); ctx.lineTo(x2, y + seg); ctx.stroke();
-      }
-      ctx.setLineDash([]);
-
-      // Sidewalk texture lines (subtle)
-      ctx.globalAlpha = 0.35;
-      ctx.strokeStyle = "rgba(255,255,255,.20)";
-      ctx.lineWidth = 1;
-      for (let y = road.topY + 20; y <= road.botY; y += 26){
-        const left = roadLeftAt(y);
-        const w = roadWAt(y);
-        const t = (y - road.topY) / (road.botY - road.topY);
-        const curb = 6 + t * (road.curbPad - 6);
-
-        ctx.beginPath();
-        ctx.moveTo(left - curb, y);
-        ctx.lineTo(left, y);
-        ctx.stroke();
-
-        ctx.beginPath();
-        ctx.moveTo(left + w, y);
-        ctx.lineTo(left + w + curb, y);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-
-      ctx.restore();
-    }
-
-    function drawLamps(){
-      const span = (road.botY - road.topY);
-
-      for (const l of env.lamps){
-        let yy = l.y + (game.scroll * 0.30) * (1 - l.depth);
-        while (yy > road.botY) yy -= span;
-
-        const persp = (yy - road.topY) / (road.botY - road.topY);
-        const scale = 0.55 + persp*0.95;
-
-        const left = roadLeftAt(yy);
-        const w = roadWAt(yy);
-
-        const curb = 6 + persp * (road.curbPad - 6);
-        const edgeX = l.edge < 0 ? (left - curb) : (left + w + curb);
-        const x = edgeX + (l.edge < 0 ? -10*scale : 10*scale);
-
-        ctx.save();
-        ctx.globalAlpha = 0.80;
-        ctx.strokeStyle = "rgba(255,255,255,.28)";
-        ctx.lineWidth = 2;
-
-        // pole
-        ctx.beginPath();
-        ctx.moveTo(x, yy);
-        ctx.lineTo(x, yy - 90*scale);
-        ctx.stroke();
-
-        // arm
-        ctx.beginPath();
-        ctx.moveTo(x, yy - 74*scale);
-        ctx.lineTo(x + (l.edge < 0 ? 28*scale : -28*scale), yy - 64*scale);
-        ctx.stroke();
-
-        // glow
-        const lx = x + (l.edge < 0 ? 32*scale : -32*scale);
-        const ly = yy - 62*scale;
-        const grd = ctx.createRadialGradient(lx, ly, 3, lx, ly, 34*scale);
-        grd.addColorStop(0, "rgba(255,209,102,.30)");
-        grd.addColorStop(1, "rgba(255,209,102,0)");
-        ctx.fillStyle = grd;
-        ctx.beginPath();
-        ctx.arc(lx, ly, 34*scale, 0, Math.PI*2);
-        ctx.fill();
-
-        ctx.restore();
-      }
-    }
-
-    function drawBanners(){
-      const span = (road.botY - road.topY);
-
-      for (const b of env.banners){
-        let yy = b.y + (game.scroll * 0.26) * (1 - b.depth);
-        while (yy > road.botY) yy -= span;
-
-        const persp = (yy - road.topY) / (road.botY - road.topY);
-        if (persp < 0.20 || persp > 0.62) continue;
-
-        const left = roadLeftAt(yy);
-        const w = roadWAt(yy);
-
-        const x = left - w*0.10;
-        const ww = w * 1.20;
-        const hh = 18 + persp*20;
-
-        ctx.save();
-        ctx.globalAlpha = 0.78;
-
-        // rope
-        ctx.strokeStyle = "rgba(255,255,255,.26)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x, yy);
-        ctx.lineTo(x+ww, yy);
-        ctx.stroke();
-
-        // cloth
-        drawFlagCloth(x, yy + 4, ww, hh, b.type, 0.62);
-
-        ctx.restore();
-      }
-    }
-
-    function drawPlayer(){
-      const shadowScale = clamp(1 - (player.z / 210), 0.55, 1);
-
-      // shadow
-      ctx.save();
-      ctx.globalAlpha = 0.26;
-      ctx.fillStyle = "rgba(0,0,0,.55)";
-      ctx.beginPath();
-      ctx.ellipse(player.x, player.y + 28, 38*shadowScale, 13*shadowScale, 0, 0, Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-
-      // invuln blink
-      const blink = (game.invuln > 0) ? (Math.sin(game.t*22) > 0) : true;
-      if (!blink) return;
-
-      const y = player.y - player.z;
-
-      if (IMG.clara) drawCircleImage(IMG.clara, player.x, y, player.r);
-      else{
-        ctx.save();
-        ctx.fillStyle = "rgba(255,47,90,.22)";
-        ctx.beginPath(); ctx.arc(player.x,y,player.r,0,Math.PI*2); ctx.fill();
-        ctx.restore();
-      }
-    }
-
-    function drawObstacle(o){
-      const persp = (o.y - road.topY) / (road.botY - road.topY);
-      const r = 14 + persp * 32;
-      o.r = r;
-
-      const x = laneX(o.lane, o.y);
-
-      if (persp < 0.25 && game.level >= 7){
-        ctx.save();
-        ctx.globalAlpha = 0.16 + 0.08*Math.sin(game.t*10);
-        ctx.fillStyle = "rgba(255,47,90,1)";
-        ctx.beginPath();
-        ctx.arc(x, o.y, 22, 0, Math.PI*2);
-        ctx.fill();
-        ctx.restore();
-      }
-
-      if (IMG.obstacle) drawCircleImage(IMG.obstacle, x, o.y, r);
-      else{
-        ctx.save();
-        ctx.fillStyle = "rgba(22,211,200,.18)";
-        ctx.beginPath(); ctx.arc(x,o.y,r,0,Math.PI*2); ctx.fill();
-        ctx.restore();
-      }
-    }
-
-    function drawPickup(p){
-      const x = laneX(p.lane, p.y);
-      const persp = (p.y - road.topY) / (road.botY - road.topY);
-      const r = 10 + persp*16;
-      p.r = r; p.x = x;
-
-      // glow
-      ctx.save();
-      ctx.globalAlpha = 0.20;
-      ctx.fillStyle = (p.type === "life") ? "rgba(22,211,200,1)" : "rgba(255,209,102,1)";
-      ctx.beginPath();
-      ctx.arc(x, p.y, r*1.55, 0, Math.PI*2);
-      ctx.fill();
-      ctx.restore();
-
-      if (p.type === "flower"){
-        if (IMG.fleurs) drawCircleImage(IMG.fleurs, x, p.y, r);
-        else{
-          ctx.save(); ctx.fillStyle="rgba(255,209,102,.85)";
-          ctx.beginPath(); ctx.arc(x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.restore();
-        }
-      } else {
-        if (IMG.soufiane) drawCircleImage(IMG.soufiane, x, p.y, r);
-        else{
-          ctx.save(); ctx.fillStyle="rgba(22,211,200,.85)";
-          ctx.beginPath(); ctx.arc(x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.restore();
-        }
-      }
-    }
-
-    function drawOverlay(){
-      if (game.state === "start"){
-        ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,.12)";
-        ctx.fillRect(0, 0, W, H);
-
-        ctx.fillStyle = "rgba(255,255,255,.98)";
-        ctx.font = "900 44px system-ui";
-        ctx.textAlign = "center";
-        ctx.fillText("Press Space to Start", W/2, H*0.44);
-
-        ctx.fillStyle = "rgba(255,255,255,.86)";
-        ctx.font = "16px system-ui";
-        ctx.fillText("Left/Right: lane. Space: jump. P: pause. R: restart.", W/2, H*0.44 + 34);
-        ctx.restore();
-      }
-      if (game.state === "pause"){
-        ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,.18)";
-        ctx.fillRect(0, 0, W, H);
-        ctx.fillStyle = "rgba(255,255,255,.98)";
-        ctx.font = "900 46px system-ui";
-        ctx.textAlign = "center";
-        ctx.fillText("Paused", W/2, H*0.46);
-        ctx.fillStyle = "rgba(255,255,255,.86)";
-        ctx.font = "16px system-ui";
-        ctx.fillText("Press P to resume", W/2, H*0.46 + 32);
-        ctx.restore();
-      }
-      if (game.state === "over"){
-        ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,.22)";
-        ctx.fillRect(0, H/2 - 84, W, 168);
-        ctx.fillStyle = "rgba(255,255,255,.98)";
-        ctx.font = "900 52px system-ui";
-        ctx.textAlign="center";
-        ctx.fillText("Game Over", W/2, H/2 - 14);
-        ctx.fillStyle = "rgba(255,255,255,.86)";
-        ctx.font = "16px system-ui";
-        ctx.fillText("Press R to restart", W/2, H/2 + 28);
-        ctx.restore();
-      }
-    }
-
-    // Difficulty + scoring
+    // Spawning & difficulty
     function updateDifficulty(){
-      const lvl = 1 + Math.floor(game.score / 340);
+      const lvl = 1 + Math.floor(game.score / 360);
       game.level = clamp(lvl, 1, 70);
 
       const k = clamp((game.level - 1) / 28, 0, 1);
-      game.speed = 300 + k * 630;          // 300 -> 930
-      game.spawnEvery = 0.98 - k * 0.55;   // 0.98 -> 0.43
+      game.speed = 320 + k * 620;          // 320 -> 940
+      game.spawnEvery = 0.98 - k * 0.56;   // 0.98 -> 0.42
 
       const targetMult = 1 + clamp(game.combo / 14, 0, 3.2);
       game.mult = lerp(game.mult, targetMult, 0.07);
@@ -906,47 +456,42 @@
     function spawnPattern(){
       const lvl = game.level;
 
+      // Obstacles
       const l1 = lanes[Math.floor(Math.random()*3)];
       let l2 = l1; while (l2 === l1) l2 = lanes[Math.floor(Math.random()*3)];
 
       obstacles.push({ lane:l1, y: road.topY - 60, r:16 });
 
-      // doubles
-      const pDouble = clamp(0.08 + (lvl-5)*0.035, 0, 0.68);
-      if (lvl >= 6 && Math.random() < pDouble){
+      const pDouble = clamp(0.08 + (lvl-6)*0.035, 0, 0.70);
+      if (lvl >= 7 && Math.random() < pDouble){
         obstacles.push({ lane:l2, y: road.topY - 110, r:16 });
       }
 
-      // sometimes block 2 lanes
-      const pTwoBlocked = clamp(0 + (lvl-12)*0.02, 0, 0.32);
-      if (lvl >= 14 && Math.random() < pTwoBlocked){
+      const pTwoBlocked = clamp(0 + (lvl-14)*0.02, 0, 0.32);
+      if (lvl >= 16 && Math.random() < pTwoBlocked){
         const safe = lanes[Math.floor(Math.random()*3)];
         for (const ln of lanes){
           if (ln !== safe) obstacles.push({ lane:ln, y: road.topY - 170, r:16 });
         }
       }
 
-      // Flower pickups (main scoring)
-      const flowerChance = 0.90;
-      if (Math.random() < flowerChance){
+      // Pickups: ONLY flowers + rare life. No coins anywhere.
+      if (Math.random() < 0.92){
         const lane = Math.random() < 0.55 ? l2 : l1;
         const count = (lvl < 12) ? 2 : (lvl < 26 ? 3 : 4);
         for (let i=0;i<count;i++){
-          pickups.push({ type:"flower", lane, y: road.topY - 140 - i*52, r:12, x:0 });
+          pickups.push({ type:"flower", lane, y: road.topY - 140 - i*52, r:12 });
         }
       }
 
-      // Life pickup (Soufiane) rules
-      // - max 2 lives
-      // - cooldown prevents farming
       const lifeCooldownOk = (game.t - game.lastLifeGainTime) > 7.0;
-      const baseLifeChance = 0.13; // rare
-      if (lvl >= 7 && lifeCooldownOk && Math.random() < baseLifeChance){
+      if (lvl >= 7 && lifeCooldownOk && Math.random() < 0.12){
         const lane = lanes[Math.floor(Math.random()*3)];
-        pickups.push({ type:"life", lane, y: road.topY - 215, r:12, x:0 });
+        pickups.push({ type:"life", lane, y: road.topY - 215, r:12 });
       }
     }
 
+    // Update
     function updatePlayer(dt){
       if (player.switching){
         player.switchT += dt;
@@ -972,15 +517,15 @@
 
       if (game.invuln > 0) game.invuln = Math.max(0, game.invuln - dt);
       if (game.shake > 0) game.shake = Math.max(0, game.shake - 40*dt);
+      if (game.hudPulse > 0) game.hudPulse = Math.max(0, game.hudPulse - dt);
     }
 
     function updateWorld(dt){
       if (game.state !== "play") return;
 
-      // Base score over time
       game.score += Math.floor(dt * 18 * game.mult);
-
       updateDifficulty();
+
       game.scroll += game.speed * dt;
 
       game.spawnTimer += dt;
@@ -998,47 +543,46 @@
         const ox = laneX(o.lane, o.y);
         const py = player.y - player.z;
 
-        if (canHit && circleHit(player.x, py, player.r*0.86, ox, o.y, (o.r || 18)*0.86)){
+        if (canHit && circleHit(player.x, py, player.r*0.86, ox, o.y, (o.r||18)*0.86)){
           onHit();
           obstacles.splice(i,1);
           continue;
         }
 
-        if (o.y > H + 160) obstacles.splice(i,1);
+        if (o.y > H + 170) obstacles.splice(i,1);
       }
 
-      // Pickups
+      // Pickups (flowers + life only)
       for (let i=pickups.length-1;i>=0;i--){
         const p = pickups[i];
         p.y += game.speed * dt;
 
+        const cx = laneX(p.lane, p.y);
         const px = player.x;
         const py = player.y - player.z;
-        const cx = laneX(p.lane, p.y);
-        const pr = player.r*0.78;
 
-        if (circleHit(px, py, pr, cx, p.y, (p.r || 14)*1.05)){
+        const persp = (p.y - road.topY) / (road.botY - road.topY);
+        const rr = (10 + persp*16) * 1.05;
+
+        if (circleHit(px, py, player.r*0.78, cx, p.y, rr)){
           if (p.type === "flower"){
             game.flowers += 1;
             game.combo += 1.0;
             game.lastFlowerTime = game.t;
 
-            // Flower scoring: strong reward
-            // includes small scaling by level
-            const bonus = Math.floor((150 + game.level*2) * game.mult);
+            const bonus = Math.floor((160 + game.level*2) * game.mult);
             game.score += bonus;
 
+            game.hudPulse = 0.35;
           } else {
-            // Life pickup rules:
-            // - if lives < 2: set to 2
-            // - if already 2: convert to points
             if (game.lives < 2){
               game.lives = 2;
               game.invuln = Math.max(game.invuln, 0.35);
               game.lastLifeGainTime = game.t;
+              game.hudPulse = 0.45;
             } else {
               game.score += 300;
-              game.lastLifeGainTime = game.t; // still enforces cooldown
+              game.lastLifeGainTime = game.t;
             }
           }
 
@@ -1046,17 +590,416 @@
           continue;
         }
 
-        if (p.y > H + 160) pickups.splice(i,1);
+        if (p.y > H + 170) pickups.splice(i,1);
       }
 
-      // Combo decay if no flowers collected recently
+      // combo decay
       if (game.t - game.lastFlowerTime > 1.4){
         game.combo = Math.max(0, game.combo - dt*1.3);
       }
     }
 
+    // Draw
+    function drawCircleImage(img, x, y, r){
+      const size = r * 2.35;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI*2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, x - size/2, y - size/2, size, size);
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = "rgba(255,255,255,.25)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawSky(){
+      const g = ctx.createLinearGradient(0, 0, 0, H);
+      g.addColorStop(0.00, "rgba(125,211,252,.20)");
+      g.addColorStop(0.45, "rgba(167,139,250,.14)");
+      g.addColorStop(0.80, "rgba(251,113,133,.10)");
+      g.addColorStop(1.00, "rgba(0,0,0,.05)");
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,W,H);
+    }
+
+    function drawRoadAndSidewalk(){
+      const topL = { x: road.cx - road.topW/2, y: road.topY };
+      const topR = { x: road.cx + road.topW/2, y: road.topY };
+      const botL = { x: road.cx - road.botW/2, y: road.botY };
+      const botR = { x: road.cx + road.botW/2, y: road.botY };
+
+      // sidewalk strips
+      ctx.save();
+
+      // soft glow
+      ctx.globalAlpha = 0.22;
+      ctx.fillStyle = "rgba(255,255,255,1)";
+      ctx.beginPath();
+      ctx.moveTo(topL.x - 10, topL.y);
+      ctx.lineTo(topL.x + 2, topL.y);
+      ctx.lineTo(botL.x + 2, botL.y);
+      ctx.lineTo(botL.x - road.curbPad, botL.y);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(topR.x - 2, topR.y);
+      ctx.lineTo(topR.x + 10, topR.y);
+      ctx.lineTo(botR.x + road.curbPad, botR.y);
+      ctx.lineTo(botR.x - 2, botR.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.globalAlpha = 1;
+
+      // sidewalk main
+      ctx.fillStyle = "rgba(255,255,255,.10)";
+      ctx.beginPath();
+      ctx.moveTo(topL.x - 12, topL.y);
+      ctx.lineTo(topL.x + 2, topL.y);
+      ctx.lineTo(botL.x + 2, botL.y);
+      ctx.lineTo(botL.x - road.curbPad, botL.y);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(topR.x - 2, topR.y);
+      ctx.lineTo(topR.x + 12, topR.y);
+      ctx.lineTo(botR.x + road.curbPad, botR.y);
+      ctx.lineTo(botR.x - 2, botR.y);
+      ctx.closePath();
+      ctx.fill();
+
+      // road
+      ctx.fillStyle = "rgba(0,0,0,.20)";
+      ctx.beginPath();
+      ctx.moveTo(topL.x, topL.y);
+      ctx.lineTo(topR.x, topR.y);
+      ctx.lineTo(botR.x, botR.y);
+      ctx.lineTo(botL.x, botL.y);
+      ctx.closePath();
+      ctx.fill();
+
+      // road edge
+      ctx.strokeStyle = "rgba(255,255,255,.22)";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(topL.x, topL.y);
+      ctx.lineTo(topR.x, topR.y);
+      ctx.lineTo(botR.x, botR.y);
+      ctx.lineTo(botL.x, botL.y);
+      ctx.closePath();
+      ctx.stroke();
+
+      // lane dashes
+      ctx.strokeStyle = "rgba(255,255,255,.26)";
+      ctx.lineWidth = 2;
+      const dash = 22, gap = 18;
+      const offset = (game.t * game.speed * 0.11) % (dash+gap);
+      ctx.setLineDash([dash, gap]);
+      ctx.lineDashOffset = -offset;
+
+      const step = 16;
+      for (let y = road.topY; y <= road.botY; y += step){
+        const left = roadLeftAt(y);
+        const w = roadWAt(y);
+        const lw = w/3;
+        const x1 = left + lw;
+        const x2 = left + lw*2;
+        const persp = (y - road.topY) / (road.botY - road.topY);
+        const seg = 10 + persp*26;
+
+        ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1, y + seg); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(x2, y); ctx.lineTo(x2, y + seg); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+
+      // sidewalk lines
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = "rgba(255,255,255,.20)";
+      ctx.lineWidth = 1;
+      for (let y = road.topY + 20; y <= road.botY; y += 26){
+        const left = roadLeftAt(y);
+        const w = roadWAt(y);
+        const t = (y - road.topY) / (road.botY - road.topY);
+        const curb = 6 + t * (road.curbPad - 6);
+
+        ctx.beginPath(); ctx.moveTo(left - curb, y); ctx.lineTo(left, y); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(left + w, y); ctx.lineTo(left + w + curb, y); ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+
+      ctx.restore();
+    }
+
+    function drawLamps(){
+      // clean lamps, always on edges (not middle)
+      const span = (road.botY - road.topY);
+      const count = 18;
+
+      for (let i=0;i<count;i++){
+        // evenly spaced so it doesn't look random/buggy
+        const base = road.topY + 60 + (i*(road.botY-road.topY-140)/(count-1));
+        const yy = base + ((game.scroll * 0.30) % 240) * 0.15;
+
+        const persp = (yy - road.topY) / (road.botY - road.topY);
+        const scale = 0.55 + persp*0.95;
+
+        const left = roadLeftAt(yy);
+        const w = roadWAt(yy);
+
+        const curb = 6 + persp * (road.curbPad - 6);
+        const side = (i % 2 === 0) ? -1 : 1;
+
+        const edgeX = side < 0 ? (left - curb) : (left + w + curb);
+        const x = edgeX + (side < 0 ? -10*scale : 10*scale);
+
+        ctx.save();
+        ctx.globalAlpha = 0.78;
+        ctx.strokeStyle = "rgba(255,255,255,.26)";
+        ctx.lineWidth = 2;
+
+        ctx.beginPath();
+        ctx.moveTo(x, yy);
+        ctx.lineTo(x, yy - 85*scale);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x, yy - 70*scale);
+        ctx.lineTo(x + (side < 0 ? 26*scale : -26*scale), yy - 60*scale);
+        ctx.stroke();
+
+        const lx = x + (side < 0 ? 30*scale : -30*scale);
+        const ly = yy - 58*scale;
+        const grd = ctx.createRadialGradient(lx, ly, 3, lx, ly, 34*scale);
+        grd.addColorStop(0, "rgba(255,209,102,.28)");
+        grd.addColorStop(1, "rgba(255,209,102,0)");
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 34*scale, 0, Math.PI*2);
+        ctx.fill();
+
+        ctx.restore();
+      }
+    }
+
+    function drawObstacle(o){
+      const persp = (o.y - road.topY) / (road.botY - road.topY);
+      const r = 14 + persp * 32;
+      o.r = r;
+      const x = laneX(o.lane, o.y);
+
+      if (persp < 0.25 && game.level >= 7){
+        ctx.save();
+        ctx.globalAlpha = 0.15 + 0.08*Math.sin(game.t*10);
+        ctx.fillStyle = "rgba(255,47,90,1)";
+        ctx.beginPath(); ctx.arc(x, o.y, 22, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+
+      if (IMG.obstacle) drawCircleImage(IMG.obstacle, x, o.y, r);
+      else{
+        ctx.save();
+        ctx.fillStyle = "rgba(22,211,200,.18)";
+        ctx.beginPath(); ctx.arc(x,o.y,r,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawPickup(p){
+      const x = laneX(p.lane, p.y);
+      const persp = (p.y - road.topY) / (road.botY - road.topY);
+      const r = 10 + persp*16;
+
+      ctx.save();
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = (p.type === "life") ? "rgba(22,211,200,1)" : "rgba(255,209,102,1)";
+      ctx.beginPath(); ctx.arc(x, p.y, r*1.55, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+
+      if (p.type === "flower"){
+        if (IMG.fleurs) drawCircleImage(IMG.fleurs, x, p.y, r);
+        else{
+          ctx.save(); ctx.fillStyle="rgba(255,209,102,.85)";
+          ctx.beginPath(); ctx.arc(x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.restore();
+        }
+      } else {
+        if (IMG.soufiane) drawCircleImage(IMG.soufiane, x, p.y, r);
+        else{
+          ctx.save(); ctx.fillStyle="rgba(22,211,200,.85)";
+          ctx.beginPath(); ctx.arc(x,p.y,r,0,Math.PI*2); ctx.fill(); ctx.restore();
+        }
+      }
+    }
+
+    function drawPlayer(){
+      const shadowScale = clamp(1 - (player.z / 210), 0.55, 1);
+
+      ctx.save();
+      ctx.globalAlpha = 0.26;
+      ctx.fillStyle = "rgba(0,0,0,.55)";
+      ctx.beginPath();
+      ctx.ellipse(player.x, player.y + 28, 38*shadowScale, 13*shadowScale, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.restore();
+
+      const blink = (game.invuln > 0) ? (Math.sin(game.t*22) > 0) : true;
+      if (!blink) return;
+
+      const y = player.y - player.z;
+      if (IMG.clara) drawCircleImage(IMG.clara, player.x, y, player.r);
+      else{
+        ctx.save();
+        ctx.fillStyle = "rgba(255,47,90,.22)";
+        ctx.beginPath(); ctx.arc(player.x,y,player.r,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    function drawHUD(){
+      // In-canvas HUD (top)
+      const pad = 16;
+      const barH = 56;
+      const x = pad, y = pad;
+      const w = W - pad*2;
+
+      // background
+      ctx.save();
+      ctx.globalAlpha = 0.92;
+      ctx.fillStyle = "rgba(0,0,0,.22)";
+      ctx.strokeStyle = "rgba(255,255,255,.18)";
+      ctx.lineWidth = 1;
+      roundRect(x, y, w, barH, 16);
+      ctx.fill();
+      ctx.stroke();
+
+      // subtle pulse on pickup
+      if (game.hudPulse > 0){
+        ctx.globalAlpha = 0.22 * (game.hudPulse / 0.45);
+        ctx.fillStyle = "rgba(255,209,102,1)";
+        roundRect(x, y, w, barH, 16);
+        ctx.fill();
+      }
+
+      ctx.globalAlpha = 1;
+
+      // text
+      ctx.fillStyle = "rgba(255,255,255,.96)";
+      ctx.font = "800 18px system-ui";
+      ctx.textBaseline = "middle";
+
+      const col1 = x + 16;
+      const col2 = x + 270;
+      const col3 = x + 470;
+      const col4 = x + 650;
+      const midY = y + barH/2;
+
+      // Flowers
+      ctx.fillStyle = "rgba(255,255,255,.96)";
+      ctx.fillText("Flowers", col1, midY - 10);
+      ctx.font = "900 22px system-ui";
+      ctx.fillText(String(game.flowers), col1, midY + 14);
+
+      // Score
+      ctx.font = "800 18px system-ui";
+      ctx.fillText("Score", col2, midY - 10);
+      ctx.font = "900 22px system-ui";
+      ctx.fillText(String(game.score), col2, midY + 14);
+
+      // Best
+      ctx.font = "800 18px system-ui";
+      ctx.fillText("Best", col3, midY - 10);
+      ctx.font = "900 22px system-ui";
+      ctx.fillText(String(best), col3, midY + 14);
+
+      // Level + Mult + Lives (compact)
+      ctx.font = "800 18px system-ui";
+      ctx.fillText("Level", col4, midY - 10);
+      ctx.font = "900 22px system-ui";
+      ctx.fillText(String(game.level), col4, midY + 14);
+
+      const right = x + w - 16;
+      ctx.textAlign = "right";
+      ctx.font = "800 18px system-ui";
+      ctx.fillText("Multiplier", right, midY - 10);
+      ctx.font = "900 22px system-ui";
+      ctx.fillText("x" + game.mult.toFixed(1) + "   Lives " + game.lives + "/2", right, midY + 14);
+
+      ctx.restore();
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+    }
+
+    function drawOverlay(){
+      if (game.state === "start"){
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,.10)";
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = "rgba(255,255,255,.98)";
+        ctx.font = "900 44px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("Press Space to Start", W/2, H*0.50);
+
+        ctx.fillStyle = "rgba(255,255,255,.86)";
+        ctx.font = "16px system-ui";
+        ctx.fillText("Left/Right: lane. Space: jump. P: pause.", W/2, H*0.50 + 34);
+        ctx.restore();
+      }
+
+      if (game.state === "pause"){
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,.16)";
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = "rgba(255,255,255,.98)";
+        ctx.font = "900 46px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("Paused", W/2, H*0.50);
+
+        ctx.fillStyle = "rgba(255,255,255,.86)";
+        ctx.font = "16px system-ui";
+        ctx.fillText("Press P to resume", W/2, H*0.50 + 34);
+        ctx.restore();
+      }
+
+      if (game.state === "over"){
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,.20)";
+        ctx.fillRect(0, H/2 - 92, W, 184);
+
+        ctx.fillStyle = "rgba(255,255,255,.98)";
+        ctx.font = "900 52px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("Game Over", W/2, H/2 - 18);
+
+        ctx.fillStyle = "rgba(255,255,255,.86)";
+        ctx.font = "16px system-ui";
+        ctx.fillText("Press Space to restart", W/2, H/2 + 22);
+        ctx.restore();
+      }
+    }
+
+    function roundRect(x, y, w, h, r){
+      const rr = Math.min(r, w/2, h/2);
+      ctx.beginPath();
+      ctx.moveTo(x+rr, y);
+      ctx.arcTo(x+w, y, x+w, y+h, rr);
+      ctx.arcTo(x+w, y+h, x, y+h, rr);
+      ctx.arcTo(x, y+h, x, y, rr);
+      ctx.arcTo(x, y, x+w, y, rr);
+      ctx.closePath();
+    }
+
+    // Render loop
     function render(){
-      // camera shake
+      // shake
       let sx = 0, sy = 0;
       if (game.shake > 0){
         sx = rand(-game.shake, game.shake);
@@ -1067,16 +1010,16 @@
       ctx.translate(sx, sy);
       ctx.clearRect(-60, -60, W+120, H+120);
 
-      drawSkyGlow();
-      drawBanners();
+      drawSky();
       drawRoadAndSidewalk();
       drawLamps();
 
-      // draw pickups then obstacles
+      // pickups and obstacles
       for (const p of pickups) drawPickup(p);
       for (const o of obstacles) drawObstacle(o);
 
       drawPlayer();
+      drawHUD();
       drawOverlay();
 
       ctx.restore();
@@ -1091,26 +1034,14 @@
         updatePlayer(dt);
         updateWorld(dt);
       }
+
       render();
-
-      // UI sync
-      ui.score.textContent = String(game.score);
-      ui.best.textContent = String(best);
-      ui.flowers.textContent = String(game.flowers);
-      ui.level.textContent = String(game.level);
-      ui.mult.textContent = "x" + game.mult.toFixed(1);
-      ui.lives.textContent = `${game.lives}/2`;
-
       requestAnimationFrame(loop);
     }
 
     // Init
-    env.init();
     restart();
-
-    loadAssets().then(() => {
-      requestAnimationFrame(loop);
-    });
+    loadAssets().then(() => requestAnimationFrame(loop));
   </script>
 </body>
 </html>
