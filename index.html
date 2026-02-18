@@ -1,15 +1,15 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Clara Road ✿</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Clara Runner ✿</title>
   <style>
     :root{
-      --bg1:#071021; --bg2:#0b1a33;
+      --bg1:#0b1220; --bg2:#111a2e;
       --txt: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.70);
-      --stroke: rgba(255,255,255,.14);
+      --muted: rgba(255,255,255,.72);
+      --stroke: rgba(255,255,255,.16);
       --card: rgba(255,255,255,.08);
     }
     *{box-sizing:border-box}
@@ -18,16 +18,15 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       background:
         radial-gradient(1100px 600px at 12% 10%, rgba(255,105,180,.18), transparent 60%),
-        radial-gradient(900px 500px at 88% 20%, rgba(0,200,255,.16), transparent 55%),
+        radial-gradient(900px 500px at 90% 25%, rgba(0,200,255,.18), transparent 55%),
+        radial-gradient(800px 500px at 55% 95%, rgba(160,255,200,.12), transparent 55%),
         linear-gradient(180deg,var(--bg1),var(--bg2));
       display:flex; align-items:center; justify-content:center; padding:22px;
     }
     .wrap{width:min(980px,100%); display:grid; gap:12px;}
     .card{
-      background:var(--card);
-      border:1px solid var(--stroke);
-      border-radius:18px;
-      overflow:hidden;
+      background:var(--card); border:1px solid var(--stroke);
+      border-radius:18px; overflow:hidden;
       box-shadow: 0 20px 60px rgba(0,0,0,.45);
     }
     header{padding:18px 18px 10px;}
@@ -42,14 +41,12 @@
       border:1px solid var(--stroke); background: rgba(0,0,0,.18);
       padding:6px 10px; border-radius:999px;
     }
-    canvas{
-      width:100%; height:auto; display:block;
-      border-top:1px solid rgba(255,255,255,.10);
-    }
+    canvas{ width:100%; height:auto; display:block; border-top:1px solid rgba(255,255,255,.10); }
     .footer{
       display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px;
       padding:12px 18px 16px; border-top:1px solid rgba(255,255,255,.10);
       color:var(--muted); font-size:12.5px;
+      align-items:center;
     }
     button{
       border:1px solid var(--stroke);
@@ -61,52 +58,52 @@
       font-weight:650;
     }
     button:hover{ background: rgba(255,255,255,.10); }
+    .right{display:flex; gap:10px; flex-wrap:wrap; align-items:center;}
+    .small{font-size:12px; opacity:.85}
   </style>
 </head>
-
 <body>
   <main class="wrap">
     <section class="card">
       <header>
-        <h1>Clara Road ✿</h1>
-        <p>Choisis une voie : gauche / milieu / droite. Esquive les “bad vibes”. Ça accélère petit à petit.</p>
+        <h1>Clara Runner ✿</h1>
+        <p>Comme Subway Surfers : 3 voies. G/D pour changer de voie. Esquive les obstacles. Vitesse ↑.</p>
       </header>
 
       <div class="row">
-        <span class="pill">⬅️ ➡️ : changer de voie</span>
-        <span class="pill">A / D : changer de voie</span>
+        <span class="pill">⬅️ ➡️</span>
+        <span class="pill">A / D</span>
         <span class="pill">Espace : pause</span>
         <span class="pill">R : restart</span>
-        <span class="pill">M : musique ON/OFF</span>
       </div>
 
-      <canvas id="game" width="900" height="520"></canvas>
+      <canvas id="game" width="900" height="540"></canvas>
 
       <div class="footer">
         <div>
           <span id="status">Chargement…</span>
           <span style="margin-left:10px">Score: <b id="score">0</b></span>
           <span style="margin-left:10px">Best: <b id="best">0</b></span>
-          <span style="margin-left:10px">Vitesse: <b id="spd">1.0x</b></span>
+          <span id="hint" class="small" style="margin-left:10px"></span>
         </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <div class="right">
           <button id="btnRestart">Restart</button>
-          <button id="btnMusic">Music: OFF</button>
+          <button id="btnMusic">Play music</button>
         </div>
       </div>
     </section>
   </main>
 
   <script>
-    // =======================
-    // ASSETS (mets ces fichiers à la racine du repo)
-    // =======================
-    // - clara.jpeg
-    // - badvibe.jpeg   (renomme ton "Ahmed.jpeg" en badvibe.jpeg)
-    // - music.mp3      (optionnel) => sinon on génère une musique simple
+    // =========================
+    // Mets ces fichiers A LA RACINE du repo:
+    // - clara.png
+    // - ahmed.png   (idéalement renommer en badvibes.png)
+    // - music.mp3   (optionnel)
+    // =========================
     const ASSETS = {
-      player: "clara.jpeg",
-      enemy: "badvibe.jpeg",
+      player: "clara.png",
+      obstacle: "ahmed.png", // <- change en "badvibes.png" si tu renommes
       music: "music.mp3"
     };
 
@@ -117,93 +114,130 @@
       status: document.getElementById("status"),
       score: document.getElementById("score"),
       best: document.getElementById("best"),
-      spd: document.getElementById("spd"),
+      hint: document.getElementById("hint"),
       btnRestart: document.getElementById("btnRestart"),
-      btnMusic: document.getElementById("btnMusic"),
+      btnMusic: document.getElementById("btnMusic")
     };
 
-    // Best score persist
-    const BEST_KEY = "clara_road_best";
+    // Best
+    const BEST_KEY = "clara_runner_best_v2";
     let best = Number(localStorage.getItem(BEST_KEY) || 0);
     ui.best.textContent = String(best);
 
     const W = canvas.width, H = canvas.height;
 
-    // 3 lanes
-    const laneX = [W * 0.30, W * 0.50, W * 0.70];
-    const roadLeft = W * 0.20;
-    const roadRight = W * 0.80;
-
-    const player = {
-      lane: 1, // 0 left, 1 mid, 2 right
-      x: laneX[1],
-      y: H - 95,
-      r: 28
+    // Road perspective (Subway-ish)
+    const road = {
+      topY: 70,
+      botY: H - 35,
+      topW: W * 0.18,   // narrow at top
+      botW: W * 0.74,   // wide at bottom
+      cx: W / 2
     };
 
-    const enemies = [];
+    // Lanes in "road space" [-1,0,1]
+    const lanes = [-1, 0, 1];
+
+    function roadWidthAt(y){
+      const t = (y - road.topY) / (road.botY - road.topY);
+      return road.topW + t * (road.botW - road.topW);
+    }
+
+    function roadXAt(y){
+      const w = roadWidthAt(y);
+      return { left: road.cx - w/2, right: road.cx + w/2, w };
+    }
+
+    // Convert lane (-1/0/1) to x at a given y, with perspective
+    function laneX(lane, y){
+      const { left, w } = roadXAt(y);
+      const laneW = w / 3;
+      const idx = lane === -1 ? 0 : (lane === 0 ? 1 : 2);
+      return left + laneW*(idx + 0.5);
+    }
+
+    // Player
+    const player = {
+      lane: 0,
+      y: H - 135,
+      x: laneX(0, H - 135),
+      r: 34,
+      switchDuration: 0.09, // seconds (snappy like subway)
+      switching: false,
+      fromLane: 0,
+      toLane: 0,
+      switchT: 0
+    };
+
+    // Obstacles
+    let obstacles = [];
+    let spawnTimer = 0;
+    let spawnEvery = 0.85; // will decrease
+    let speed = 260;       // will increase
+    let score = 0;
+
+    // State
     let running = true;
     let gameOver = false;
-    let score = 0;
-    let speed = 1.0;        // increases over time
-    let baseEnemySpeed = 210;
-    let spawnTimer = 0;
-    let spawnEvery = 0.85;  // seconds (will decrease a bit)
-    let tPrev = performance.now();
+    let lastT = performance.now();
+
+    // Music
+    const audio = new Audio();
+    audio.loop = true;
+    audio.preload = "auto";
+    audio.src = ASSETS.music;
+    let musicReady = false;
+    audio.addEventListener("canplaythrough", () => { musicReady = true; });
+    audio.addEventListener("error", () => { musicReady = false; });
 
     // Images
-    const imgP = new Image();
-    const imgE = new Image();
-    let hasP = false, hasE = false;
+    const imgPlayer = new Image();
+    const imgObstacle = new Image();
+    let hasPlayer = false, hasObstacle = false;
 
-    function tryLoad(img, url){
-      return new Promise((resolve) => {
-        img.onload = () => resolve(true);
-        img.onerror = () => resolve(false);
-        img.src = url;
+    function tryLoad(img, src){
+      return new Promise(res => {
+        img.onload = () => res(true);
+        img.onerror = () => res(false);
+        img.src = src;
       });
     }
 
-    // Music: try file music.mp3, else simple generated synth
-    let musicOn = false;
-    let audioEl = null;
+    async function loadAssets(){
+      hasPlayer = await tryLoad(imgPlayer, ASSETS.player);
+      hasObstacle = await tryLoad(imgObstacle, ASSETS.obstacle);
 
-    function setupAudio(){
-      // Try to load file
-      audioEl = new Audio();
-      audioEl.loop = true;
-      audioEl.src = ASSETS.music;
-      audioEl.addEventListener("error", () => {
-        // If file missing, we keep audioEl but won't rely on it
-      });
-    }
+      const missing = [];
+      if (!hasPlayer) missing.push(ASSETS.player);
+      if (!hasObstacle) missing.push(ASSETS.obstacle);
 
-    async function toggleMusic(force){
-      const next = (typeof force === "boolean") ? force : !musicOn;
-      musicOn = next;
-      ui.btnMusic.textContent = "Music: " + (musicOn ? "ON" : "OFF");
-
-      if (!audioEl) setupAudio();
-
-      if (musicOn){
-        try { await audioEl.play(); } catch(e) {
-          // Autoplay may be blocked until user interaction; it's fine.
-        }
+      if (missing.length){
+        ui.hint.textContent = `Introuvable: ${missing.join(", ")} (nom exact + extension ?)`;
+        ui.status.textContent = "OK (fallback emojis)";
       } else {
-        try { audioEl.pause(); } catch(e) {}
+        ui.hint.textContent = "";
+        ui.status.textContent = "Go ✨";
       }
     }
 
-    // Input lane switch
-    function setLane(l){
-      player.lane = Math.max(0, Math.min(2, l));
-      player.x = laneX[player.lane];
+    // Controls (Subway: left/right shift lane)
+    function requestLane(delta){
+      if (gameOver) return;
+      const idx = lanes.indexOf(player.lane);
+      const next = lanes[Math.max(0, Math.min(2, idx + delta))];
+      if (next === player.lane) return;
+
+      player.switching = true;
+      player.fromLane = player.lane;
+      player.toLane = next;
+      player.switchT = 0;
+      player.lane = next;
     }
 
     window.addEventListener("keydown", (e) => {
       const k = (e.key || "").toLowerCase();
-      if (k === "arrowleft" || k === "a") setLane(player.lane - 1);
-      if (k === "arrowright" || k === "d") setLane(player.lane + 1);
+      if (k === "arrowleft" || k === "a") requestLane(-1);
+      if (k === "arrowright" || k === "d") requestLane(+1);
 
       if (k === " "){
         e.preventDefault();
@@ -211,26 +245,40 @@
         ui.status.textContent = running ? "Go ✨" : "Pause";
       }
       if (k === "r") restart();
-      if (k === "m") toggleMusic();
     });
 
     ui.btnRestart.addEventListener("click", restart);
-    ui.btnMusic.addEventListener("click", () => toggleMusic());
+    ui.btnMusic.addEventListener("click", async () => {
+      if (!musicReady){
+        ui.status.textContent = "Ajoute music.mp3 (optionnel)";
+        return;
+      }
+      if (audio.paused){
+        try { await audio.play(); ui.btnMusic.textContent = "Stop music"; }
+        catch { ui.status.textContent = "Audio bloqué (re-clique)"; }
+      } else {
+        audio.pause();
+        ui.btnMusic.textContent = "Play music";
+      }
+    });
 
     function restart(){
-      enemies.length = 0;
-      score = 0;
-      speed = 1.0;
+      obstacles = [];
       spawnTimer = 0;
       spawnEvery = 0.85;
-      baseEnemySpeed = 210;
+      speed = 260;
+      score = 0;
+
+      player.lane = 0;
+      player.x = laneX(0, player.y);
+      player.switching = false;
+
       running = true;
       gameOver = false;
-      setLane(1);
       ui.status.textContent = "Go ✨";
     }
 
-    function endGame(){
+    function end(){
       gameOver = true;
       running = false;
       ui.status.textContent = "Game Over — R ou Restart";
@@ -241,245 +289,237 @@
       }
     }
 
-    function rand(a,b){ return a + Math.random() * (b-a); }
-
-    function spawnEnemy(){
-      // avoid spawning exactly on player lane too often
-      const lane = (Math.random() < 0.55) ? Math.floor(rand(0,3)) : ((player.lane + (Math.random()<0.5?1:2)) % 3);
-      enemies.push({
+    // Spawn obstacles at the top, then move toward player
+    function spawn(){
+      const lane = lanes[Math.floor(Math.random()*3)];
+      obstacles.push({
         lane,
-        x: laneX[lane],
-        y: -70,
-        r: 26,
-        vy: (baseEnemySpeed + rand(-15, 40)) * speed
+        y: road.topY - 30,
+        r: 18,
       });
     }
 
-    function hit(ax, ay, ar, bx, by, br){
-      const dx = ax - bx, dy = ay - by;
-      return (dx*dx + dy*dy) <= (ar+br)*(ar+br);
+    // Collision approx: use player radius vs obstacle projected radius at player's y
+    function hit(px, py, pr, ox, oy, or){
+      const dx = px - ox, dy = py - oy;
+      return (dx*dx + dy*dy) <= (pr+or)*(pr+or);
     }
 
-    // Sakura petals
-    const petals = Array.from({length: 26}, () => ({
-      x: rand(roadLeft, roadRight),
-      y: rand(-H, 0),
-      r: rand(2.0, 4.2),
-      vy: rand(18, 42),
-      vx: rand(-12, 12),
-      phase: rand(0, Math.PI*2),
-      wobble: rand(1.2, 2.6),
-    }));
-
-    function updatePetals(dt){
-      for (const p of petals){
-        p.y += (p.vy * (0.8 + speed*0.08)) * dt;
-        p.x += (p.vx + Math.sin(performance.now()/1000 * p.wobble + p.phase) * 10) * dt;
-        if (p.y > H + 10){
-          p.y = rand(-80, -10);
-          p.x = rand(roadLeft, roadRight);
-        }
-        if (p.x < roadLeft - 20) p.x = roadRight + 20;
-        if (p.x > roadRight + 20) p.x = roadLeft - 20;
-      }
-    }
-
-    function drawPetals(){
+    // Draw road with perspective + 2 lane lines (so 3 paths)
+    function drawRoad(t){
+      // Road polygon
       ctx.save();
-      ctx.fillStyle = "rgba(255,180,210,.35)";
-      for (const p of petals){
-        ctx.beginPath();
-        ctx.ellipse(p.x, p.y, p.r*1.2, p.r, Math.sin(p.phase)*0.8, 0, Math.PI*2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
+      ctx.fillStyle = "rgba(0,0,0,.26)";
+      ctx.beginPath();
+      ctx.moveTo(road.cx - road.topW/2, road.topY);
+      ctx.lineTo(road.cx + road.topW/2, road.topY);
+      ctx.lineTo(road.cx + road.botW/2, road.botY);
+      ctx.lineTo(road.cx - road.botW/2, road.botY);
+      ctx.closePath();
+      ctx.fill();
 
-    function drawRoad(){
-      // Road body
-      ctx.save();
-      ctx.fillStyle = "rgba(0,0,0,.22)";
-      ctx.fillRect(roadLeft, 0, roadRight - roadLeft, H);
-
-      // Lane separators
+      // Edges
       ctx.strokeStyle = "rgba(255,255,255,.12)";
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      // Lane separators (2 lines), dashed and moving
+      ctx.strokeStyle = "rgba(255,255,255,.16)";
       ctx.lineWidth = 2;
-      ctx.setLineDash([18, 14]);
-      for (let i=1;i<=2;i++){
-        const x = (roadLeft + (roadRight-roadLeft)*(i/3));
+
+      const dash = 18, gap = 16;
+      const offset = (t * speed * 0.08) % (dash + gap);
+      ctx.setLineDash([dash, gap]);
+      ctx.lineDashOffset = -offset;
+
+      // For each Y step draw small segments (looks like perspective dashes)
+      const step = 16;
+      for (let y = road.topY; y <= road.botY; y += step){
+        const { left, w } = roadXAt(y);
+        const laneW = w / 3;
+        const x1 = left + laneW;     // separator 1
+        const x2 = left + laneW * 2; // separator 2
+
+        // short segment size increases with y for perspective
+        const t2 = (y - road.topY) / (road.botY - road.topY);
+        const seg = 10 + t2 * 18;
+
         ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, H);
+        ctx.moveTo(x1, y);
+        ctx.lineTo(x1, y + seg);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(x2, y);
+        ctx.lineTo(x2, y + seg);
         ctx.stroke();
       }
-      ctx.setLineDash([]);
 
-      // Side borders
-      ctx.strokeStyle = "rgba(255,255,255,.18)";
-      ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(roadLeft, 0); ctx.lineTo(roadLeft, H); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(roadRight, 0); ctx.lineTo(roadRight, H); ctx.stroke();
+      ctx.setLineDash([]);
       ctx.restore();
     }
 
     function drawPlayer(){
-      const size = player.r*2.3;
-      if (hasP){
+      const x = player.x, y = player.y;
+      if (hasPlayer){
+        const size = player.r * 2.35;
         ctx.save();
         ctx.beginPath();
-        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+        ctx.arc(x, y, player.r, 0, Math.PI*2);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(imgP, player.x - size/2, player.y - size/2, size, size);
+        ctx.drawImage(imgPlayer, x - size/2, y - size/2, size, size);
         ctx.restore();
 
         ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,.25)";
+        ctx.strokeStyle = "rgba(255,255,255,.22)";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+        ctx.arc(x, y, player.r, 0, Math.PI*2);
         ctx.stroke();
         ctx.restore();
       } else {
         ctx.save();
         ctx.fillStyle = "rgba(255,160,200,.28)";
         ctx.beginPath();
-        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+        ctx.arc(x, y, player.r, 0, Math.PI*2);
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,.25)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,255,.9)";
-        ctx.font = "22px system-ui";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("✿", player.x, player.y+1);
+        ctx.fillStyle = "rgba(255,255,255,.92)";
+        ctx.font = "24px system-ui";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillText("✿", x, y+1);
         ctx.restore();
       }
     }
 
-    function drawEnemy(e){
-      const size = e.r*2.3;
-      if (hasE){
+    function drawObstacle(o){
+      const x = laneX(o.lane, o.y);
+      const persp = (o.y - road.topY) / (road.botY - road.topY);
+      const r = 14 + persp * 26; // grows as it gets closer
+      o.r = r;
+
+      if (hasObstacle){
+        const size = r * 2.35;
         ctx.save();
         ctx.beginPath();
-        ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        ctx.arc(x, o.y, r, 0, Math.PI*2);
         ctx.closePath();
         ctx.clip();
-        ctx.drawImage(imgE, e.x - size/2, e.y - size/2, size, size);
+        ctx.drawImage(imgObstacle, x - size/2, o.y - size/2, size, size);
         ctx.restore();
 
         ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,.16)";
+        ctx.strokeStyle = "rgba(255,255,255,.14)";
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        ctx.arc(x, o.y, r, 0, Math.PI*2);
         ctx.stroke();
         ctx.restore();
       } else {
         ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,.28)";
+        ctx.fillStyle="rgba(0,0,0,.24)";
         ctx.beginPath();
-        ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        ctx.arc(x, o.y, r, 0, Math.PI*2);
         ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,.14)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,255,.85)";
-        ctx.font = "20px system-ui";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("☁️", e.x, e.y+1);
+        ctx.fillStyle="rgba(255,255,255,.86)";
+        ctx.font="22px system-ui";
+        ctx.textAlign="center";
+        ctx.textBaseline="middle";
+        ctx.fillText("☁️", x, o.y+1);
         ctx.restore();
       }
     }
 
-    function render(){
+    function drawOverlay(){
+      if (!gameOver) return;
+      ctx.save();
+      ctx.fillStyle = "rgba(0,0,0,.35)";
+      ctx.fillRect(0, H/2 - 60, W, 120);
+      ctx.fillStyle = "rgba(255,255,255,.92)";
+      ctx.font = "bold 32px system-ui";
+      ctx.textAlign="center";
+      ctx.fillText("Game Over", W/2, H/2 - 10);
+      ctx.fillStyle = "rgba(255,255,255,.75)";
+      ctx.font = "16px system-ui";
+      ctx.fillText("Appuie sur R ou clique Restart", W/2, H/2 + 22);
+      ctx.restore();
+    }
+
+    function update(dt, t){
+      // Smooth snap lane switch
+      if (player.switching){
+        player.switchT += dt;
+        const a = Math.min(1, player.switchT / player.switchDuration);
+        const fromX = laneX(player.fromLane, player.y);
+        const toX = laneX(player.toLane, player.y);
+        // easeOut
+        const eased = 1 - Math.pow(1-a, 3);
+        player.x = fromX + (toX - fromX) * eased;
+        if (a >= 1) player.switching = false;
+      } else {
+        player.x = laneX(player.lane, player.y);
+      }
+
+      if (!running || gameOver) return;
+
+      // Score & difficulty
+      score += Math.floor(dt * 14); // ~14 pts/s
+      const lvl = Math.min(1.0, score / 1400);
+      speed = 260 + lvl * 420;         // 260 -> 680
+      spawnEvery = 0.90 - lvl * 0.48;  // 0.90 -> 0.42
+
+      // Spawn
+      spawnTimer += dt;
+      if (spawnTimer >= spawnEvery){
+        spawnTimer = 0;
+        spawn();
+      }
+
+      // Move obstacles down the road
+      for (let i=obstacles.length-1;i>=0;i--){
+        const o = obstacles[i];
+        o.y += speed * dt;
+
+        const ox = laneX(o.lane, o.y);
+        if (hit(player.x, player.y, player.r*0.86, ox, o.y, o.r*0.86)){
+          end(); return;
+        }
+        if (o.y > H + 80) obstacles.splice(i, 1);
+      }
+    }
+
+    function render(t){
       ctx.clearRect(0,0,W,H);
 
-      // subtle overlay
-      const g = ctx.createLinearGradient(0,0,0,H);
+      // Vignette
+      ctx.save();
+      const g = ctx.createRadialGradient(W/2, H/2, 40, W/2, H/2, H*0.95);
       g.addColorStop(0, "rgba(255,255,255,.02)");
       g.addColorStop(1, "rgba(0,0,0,.12)");
       ctx.fillStyle = g;
       ctx.fillRect(0,0,W,H);
+      ctx.restore();
 
-      drawRoad();
-      drawPetals();
+      drawRoad(t);
 
-      for (const e of enemies) drawEnemy(e);
+      for (const o of obstacles) drawObstacle(o);
       drawPlayer();
-
-      if (gameOver){
-        ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,.40)";
-        ctx.fillRect(0, H/2 - 58, W, 116);
-        ctx.fillStyle = "rgba(255,255,255,.92)";
-        ctx.font = "bold 30px system-ui";
-        ctx.textAlign = "center";
-        ctx.fillText("Game Over", W/2, H/2 - 10);
-        ctx.fillStyle = "rgba(255,255,255,.75)";
-        ctx.font = "16px system-ui";
-        ctx.fillText("Appuie sur R ou clique Restart", W/2, H/2 + 22);
-        ctx.restore();
-      }
+      drawOverlay();
 
       ui.score.textContent = String(score);
-      ui.spd.textContent = speed.toFixed(1) + "x";
     }
 
-    function update(dt){
-      updatePetals(dt);
-
-      if (!running || gameOver) return;
-
-      // Score & speed ramp
-      score += Math.floor(dt * 12); // ~12 points/s
-      speed = 1.0 + Math.min(2.5, score / 700); // 1.0x -> up to 3.5x
-
-      // Spawn gets faster
-      spawnEvery = Math.max(0.38, 0.85 - (speed-1)*0.18);
-
-      spawnTimer += dt;
-      if (spawnTimer >= spawnEvery){
-        spawnTimer = 0;
-        spawnEnemy();
-      }
-
-      // Enemies movement and collision
-      for (let i=enemies.length-1; i>=0; i--){
-        const e = enemies[i];
-        e.y += (baseEnemySpeed * speed) * dt;
-
-        if (hit(player.x, player.y, player.r*0.9, e.x, e.y, e.r*0.9)){
-          endGame();
-          return;
-        }
-        if (e.y > H + 80){
-          enemies.splice(i,1);
-        }
-      }
-    }
-
-    function loop(tNow){
-      const dt = Math.min(0.033, (tNow - tPrev)/1000);
-      tPrev = tNow;
-      update(dt);
-      render();
+    function loop(now){
+      const dt = Math.min(0.033, (now - lastT) / 1000);
+      lastT = now;
+      const t = now/1000;
+      update(dt, t);
+      render(t);
       requestAnimationFrame(loop);
     }
 
-    async function init(){
-      setupAudio();
-
-      hasP = await tryLoad(imgP, ASSETS.player);
-      hasE = await tryLoad(imgE, ASSETS.enemy);
-
-      ui.status.textContent = "Go ✨ (3 voies)";
-      requestAnimationFrame(loop);
-    }
-
-    init();
+    loadAssets().then(() => requestAnimationFrame(loop));
   </script>
 </body>
 </html>
