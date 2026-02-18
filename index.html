@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pour Clara ✿</title>
+  <style>
+    :root{
+      --bg1:#0b1220;
+      --bg2:#111a2e;
+      --card: rgba(255,255,255,.08);
+      --stroke: rgba(255,255,255,.14);
+      --txt: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.72);
+      --shadow: 0 20px 60px rgba(0,0,0,.45);
+      --radius: 18px;
+      --accent: rgba(255, 160, 200, .35);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--txt);
+      background:
+        radial-gradient(1100px 600px at 12% 10%, rgba(255,105,180,.18), transparent 60%),
+        radial-gradient(900px 500px at 90% 25%, rgba(0,200,255,.18), transparent 55%),
+        radial-gradient(800px 500px at 55% 95%, rgba(160,255,200,.12), transparent 55%),
+        linear-gradient(180deg,var(--bg1),var(--bg2));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .wrap{width:min(900px,100%); display:grid; gap:14px;}
+    .card{
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+    .top{
+      padding:26px 22px 14px;
+    }
+    .tag{
+      display:inline-flex;
+      gap:8px;
+      align-items:center;
+      font-size:12px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.18);
+      color:var(--muted);
+    }
+    h1{
+      margin:12px 0 8px;
+      font-size: clamp(22px, 3.3vw, 36px);
+      letter-spacing:-.03em;
+      line-height:1.1;
+    }
+    p{margin:0; color:var(--muted); line-height:1.6; font-size:15.5px;}
+    .grid{
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      padding:0 22px 22px;
+    }
+    @media (max-width: 820px){ .grid{grid-template-columns:1fr} }
+    .panel{
+      padding:18px;
+      border-radius:16px;
+      border:1px solid var(--stroke);
+      background:rgba(255,255,255,.06);
+    }
+    .panel h2{
+      margin:0 0 10px;
+      font-size:15px;
+      letter-spacing:-.01em;
+      color: rgba(255,255,255,.88);
+    }
+    .row{display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;}
+    button{
+      appearance:none;
+      border:1px solid var(--stroke);
+      background:rgba(0,0,0,.22);
+      color:var(--txt);
+      padding:10px 14px;
+      border-radius:999px;
+      cursor:pointer;
+      transition: transform .08s ease, background .2s ease, border-color .2s ease;
+      font-weight:650;
+      letter-spacing:-.01em;
+      user-select:none;
+    }
+    button:hover{ background: rgba(255,255,255,.10); }
+    button:active{ transform: scale(.98); }
+    .primary{
+      background: var(--accent);
+      border-color: rgba(255,160,200,.45);
+    }
+    .primary:hover{
+      background: rgba(255,160,200,.42);
+      border-color: rgba(255,160,200,.55);
+    }
+    .out{
+      margin-top:12px;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px dashed rgba(255,255,255,.22);
+      min-height:46px;
+      display:flex;
+      align-items:center;
+      color: rgba(255,255,255,.88);
+    }
+    .mini{
+      font-size:12.5px;
+      color: rgba(255,255,255,.70);
+      margin-top:10px;
+    }
+    .footer{
+      padding:14px 22px 20px;
+      border-top:1px solid rgba(255,255,255,.10);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      color:var(--muted);
+      font-size:12.5px;
+    }
+    .flower{
+      position:absolute;
+      inset:auto 14px 12px auto;
+      opacity:.45;
+      font-size:20px;
+      transform: rotate(-10deg);
+      user-select:none;
+      pointer-events:none;
+    }
+    .tiny-links{
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;
+      color: rgba(255,255,255,.65); font-size:12.5px;
+    }
+    .tiny-links span{
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      padding:6px 10px;
+      border-radius:999px;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <section class="card">
+      <div class="top">
+        <span class="tag">✿ petit coin doux • <span id="today"></span></span>
+        <h1>Hola Clara 🙂</h1>
+        <p>
+          J’ai fait une mini-page simple. Juste un truc mignon, sans raison… enfin si :
+          ça me fait plaisir quand tu souris.
+        </p>
+        <div class="tiny-links" aria-hidden="true">
+          <span>Barcelona vibes</span>
+          <span>flower energy</span>
+          <span>veggie friendly</span>
+          <span>sushi mood</span>
+          <span>Taiwan / China ✨</span>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="panel">
+          <h2>Choisis une petite attention</h2>
+          <p>Tu cliques, et c’est tout. Pas de piège.</p>
+          <div class="row">
+            <button class="primary" id="btnSoft">🌸 Mignon</button>
+            <button id="btnTaiwan">🧋 Taiwan vibe</button>
+            <button id="btnSushi">🍣 Sushi mood</button>
+            <button id="btnFlower">🌺 Fleur originale</button>
+          </div>
+
+          <div class="out" id="out" role="status" aria-live="polite">
+            Clique un bouton 👆
+          </div>
+
+          <p class="mini">P.S. Si tu appuies sur la touche <b>C</b>, il y a un petit bonus discret.</p>
+        </div>
+
+        <div class="panel">
+          <h2>Mini idée “sans pression”</h2>
+          <p>Si un jour t’as envie, tu choisis :</p>
+          <div class="row">
+            <button id="planTea">🫖 Bubble tea</button>
+            <button id="planWalk">🌇 Sunset walk</button>
+            <button id="planFood">🥢 Veggie + sushi</button>
+          </div>
+          <div class="out" id="planOut">
+            Rien d’obligatoire. Juste une option 🙂
+          </div>
+
+          <p class="mini">
+            (Cette page ne garde aucune donnée. C’est juste une petite surprise.)
+          </p>
+        </div>
+      </div>
+
+      <div class="footer">
+        <span>Fait en mode “cute & simple”.</span>
+        <span id="sign">— (mets ton prénom ici)</span>
+      </div>
+
+      <div class="flower">✿</div>
+    </section>
+  </main>
+
+  <script>
+    // ========= CONFIG =========
+    const yourName = "Soufiane"; // <-- change si tu veux
+    // ==========================
+
+    const MSG = {
+      soft: [
+        "Petit rappel : t’as une énergie vraiment agréable.",
+        "Ça rend l’appart plus chill quand t’es là.",
+        "Je voulais juste te laisser une mini attention ✿"
+      ],
+      taiwan: [
+        "Mood du jour : bubble tea + playlist tranquille.",
+        "Taiwan vibes : simple, doux, efficace.",
+        "Si un jour tu me fais découvrir un spot, je dis oui 🙂"
+      ],
+      sushi: [
+        "Sushi mood activé 🍣 (version veggie évidemment).",
+        "Team maki, team nigiri… je te laisse être la cheffe.",
+        "Je note : un bon spot + une bonne vibe = parfait."
+      ],
+      flower: [
+        "Fleur originale du jour : une orchidée (classy) ou un protea (wow).",
+        "Tu as le style “fleurs pas banales”. J’aime bien ça.",
+        "Si je tombe sur une fleur vraiment unique, je penserai à toi."
+      ],
+      bonus: [
+        "Bonus discret : tu mérites des petites choses jolies, souvent.",
+        "Ok je le dis en version simple : je t’apprécie, Clara.",
+        "Rien de grand. Juste vrai."
+      ],
+      plans: {
+        tea: "Un bubble tea (et on marche 10 minutes après) ?",
+        walk: "Un petit sunset walk à l’heure golden ?",
+        food: "Un spot veggie + sushi ? Tu choisis, je suis."
+      }
+    };
+
+    const $ = (s) => document.querySelector(s);
+    const out = $("#out");
+    const planOut = $("#planOut");
+
+    function pick(arr){ return arr[Math.floor(Math.random() * arr.length)]; }
+    function setText(el, text){
+      el.textContent = text;
+      el.animate([{transform:"translateY(2px)", opacity:.7},{transform:"translateY(0)", opacity:1}], {duration:140, easing:"ease-out"});
+    }
+
+    // date
+    const now = new Date();
+    $("#today").textContent = now.toLocaleDateString("fr-FR", { weekday:"long", year:"numeric", month:"long", day:"numeric" });
+
+    // signature
+    $("#sign").textContent = "— " + yourName;
+
+    // buttons
+    $("#btnSoft").addEventListener("click", () => setText(out, pick(MSG.soft)));
+    $("#btnTaiwan").addEventListener("click", () => setText(out, pick(MSG.taiwan)));
+    $("#btnSushi").addEventListener("click", () => setText(out, pick(MSG.sushi)));
+    $("#btnFlower").addEventListener("click", () => setText(out, pick(MSG.flower)));
+
+    $("#planTea").addEventListener("click", () => setText(planOut, MSG.plans.tea));
+    $("#planWalk").addEventListener("click", () => setText(planOut, MSG.plans.walk));
+    $("#planFood").addEventListener("click", () => setText(planOut, MSG.plans.food));
+
+    // bonus: touche C
+    window.addEventListener("keydown", (e) => {
+      if ((e.key || "").toLowerCase() === "c") {
+        setText(out, pick(MSG.bonus));
+        document.body.animate([{filter:"brightness(1)"},{filter:"brightness(1.08)"},{filter:"brightness(1)"}], {duration:260});
+      }
+    });
+  </script>
+</body>
+</html>
