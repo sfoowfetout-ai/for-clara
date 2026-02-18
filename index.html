@@ -19,6 +19,7 @@
       background:
         radial-gradient(1100px 600px at 12% 10%, rgba(255,105,180,.18), transparent 60%),
         radial-gradient(900px 500px at 90% 25%, rgba(0,200,255,.18), transparent 55%),
+        radial-gradient(800px 500px at 55% 95%, rgba(160,255,200,.12), transparent 55%),
         linear-gradient(180deg,var(--bg1),var(--bg2));
       display:flex; align-items:center; justify-content:center; padding:22px;
     }
@@ -59,14 +60,29 @@
       font-weight:650;
     }
     button:hover{ background: rgba(255,255,255,.10); }
+
+    /* Small overlay label */
+    .hint{
+      position:absolute;
+      right:18px;
+      top:16px;
+      font-size:12px;
+      color:rgba(255,255,255,.65);
+      border:1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.18);
+      padding:6px 10px;
+      border-radius:999px;
+    }
+    .cardWrap{position:relative}
   </style>
 </head>
 <body>
   <main class="wrap">
-    <section class="card">
+    <section class="card cardWrap">
+      <div class="hint">✿ Cute + simple + fun</div>
       <header>
         <h1>Clara Dodge ✿</h1>
-        <p>Gauche / Droite (ou A / D) pour bouger. Esquive les “bad vibes”. C’est cute, simple, et fun.</p>
+        <p>Gauche / Droite (ou A / D) pour bouger. Esquive les “bad vibes”. Bonus: <b>C</b> (message cute).</p>
       </header>
 
       <div class="row">
@@ -76,7 +92,6 @@
         <span class="pill">Objectif : survivre + score</span>
       </div>
 
-      <!-- Canvas 900x520 (scale auto via CSS) -->
       <canvas id="game" width="900" height="520" aria-label="Jeu"></canvas>
 
       <div class="footer">
@@ -95,15 +110,18 @@
 
   <script>
     /**
-     * OPTION IMAGES (facultatif)
-     * - Mets ces fichiers dans le repo à la racine :
-     *    clara.png       (sprite du joueur)
-     *    obstacle.png    (nuage / bad vibes / emoji)
-     * - Si pas trouvés, le jeu utilise des formes/emoji.
+     * IMPORTANT
+     * Place these files at the ROOT of your GitHub repo (same folder as index.html):
+     *   - clara.jpeg      (player image)
+     *   - obstacle.jpeg   (obstacle image: a "bad vibe" icon/image)
+     *
+     * You can test:
+     *   https://sfoowfetout-ai.github.io/for-clara/clara.jpeg
+     *   https://sfoowfetout-ai.github.io/for-clara/obstacle.jpeg
      */
     const ASSETS = {
-      player: "clara.png",
-      obstacle: "obstacle.png",
+      player: "clara.jpeg",
+      obstacle: "obstacle.jpeg",
     };
 
     const canvas = document.getElementById("game");
@@ -138,11 +156,13 @@
     let spawnInterval = 0.9; // seconds
     let obstacleSpeed = 220; // px/sec
 
-    // Sound (very minimal, optional)
+    // Sound (minimal)
     let soundOn = false;
     const beep = (freq=440, ms=60) => {
       if (!soundOn) return;
-      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      const ac = new AC();
       const o = ac.createOscillator();
       const g = ac.createGain();
       o.frequency.value = freq;
@@ -150,7 +170,7 @@
       o.connect(g); g.connect(ac.destination);
       g.gain.value = 0.05;
       o.start();
-      setTimeout(()=>{ o.stop(); ac.close(); }, ms);
+      setTimeout(()=>{ try{ o.stop(); }catch{} try{ ac.close(); }catch{} }, ms);
     };
 
     // Load images (optional)
@@ -169,22 +189,35 @@
     async function loadAssets(){
       hasPlayerImg = await tryLoad(imgPlayer, ASSETS.player);
       hasObstacleImg = await tryLoad(imgObstacle, ASSETS.obstacle);
-      ui.status.textContent = "Prête ✨ (gauche/droite pour jouer)";
+      ui.status.textContent = "Go ✨ (gauche/droite)";
     }
 
     // Input
-    window.addEventListener("keydown", (e) => {
+    function onKeyDown(e){
       const k = (e.key || "").toLowerCase();
       if (k === "arrowleft" || k === "a") keys.left = true;
       if (k === "arrowright" || k === "d") keys.right = true;
-      if (k === " "){ running = !running; ui.status.textContent = running ? "Go ✨" : "Pause"; }
+
+      if (k === " "){
+        e.preventDefault();
+        running = !running;
+        ui.status.textContent = running ? "Go ✨" : "Pause";
+      }
       if (k === "r") restart();
-    });
-    window.addEventListener("keyup", (e) => {
+
+      // Cute bonus message (not direct)
+      if (k === "c"){
+        ui.status.textContent = "Molt bé Clara ✿ (tu gères)";
+        beep(660, 70);
+      }
+    }
+    function onKeyUp(e){
       const k = (e.key || "").toLowerCase();
       if (k === "arrowleft" || k === "a") keys.left = false;
       if (k === "arrowright" || k === "d") keys.right = false;
-    });
+    }
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
 
     ui.btnRestart.addEventListener("click", restart);
     ui.btnMute.addEventListener("click", () => {
@@ -194,8 +227,8 @@
     });
 
     // Utilities
-    function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
-    function rand(a,b){ return a + Math.random() * (b-a); }
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const rand = (a,b) => a + Math.random() * (b-a);
 
     function circleHit(ax, ay, ar, bx, by, br){
       const dx = ax - bx, dy = ay - by;
@@ -204,10 +237,10 @@
 
     function spawnObstacle(){
       obstacles.push({
-        x: rand(40, W-40),
-        y: -30,
+        x: rand(50, W-50),
+        y: -40,
         r: rand(22, 34),
-        vy: obstacleSpeed + rand(-30, 40),
+        vy: obstacleSpeed + rand(-25, 45),
         wobble: rand(0.6, 1.6),
         phase: rand(0, Math.PI*2),
       });
@@ -229,8 +262,9 @@
     function endGame(){
       gameOver = true;
       running = false;
-      ui.status.textContent = "Game Over — appuie sur R (ou Restart)";
+      ui.status.textContent = "Game Over — R ou Restart";
       beep(220, 120);
+
       if (score > best){
         best = score;
         localStorage.setItem(BEST_KEY, String(best));
@@ -238,12 +272,12 @@
       }
     }
 
-    // Render
+    // Render helpers
     function drawBackground(){
       // subtle stars
       ctx.save();
       ctx.fillStyle = "rgba(255,255,255,.06)";
-      for (let i=0;i<35;i++){
+      for (let i=0;i<36;i++){
         const x = (i*173) % W;
         const y = (i*97) % (H-80);
         ctx.beginPath();
@@ -263,9 +297,25 @@
     function drawPlayer(){
       if (hasPlayerImg){
         const size = player.r*2.2;
+        ctx.save();
+        // draw as circle-cropped
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+        ctx.closePath();
+        ctx.clip();
         ctx.drawImage(imgPlayer, player.x - size/2, player.y - size/2, size, size);
+        ctx.restore();
+
+        // outline
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,.25)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
       } else {
-        // cute circle + face
+        // fallback cute circle
         ctx.save();
         ctx.fillStyle = "rgba(255,160,200,.28)";
         ctx.beginPath();
@@ -286,8 +336,23 @@
     function drawObstacle(o){
       if (hasObstacleImg){
         const size = o.r*2.2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.r, 0, Math.PI*2);
+        ctx.closePath();
+        ctx.clip();
         ctx.drawImage(imgObstacle, o.x - size/2, o.y - size/2, size, size);
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,.18)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.r, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
       } else {
+        // fallback cloud
         ctx.save();
         ctx.fillStyle = "rgba(0,0,0,.22)";
         ctx.beginPath();
@@ -300,17 +365,51 @@
         ctx.font = "20px system-ui";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("☁️", o.x, o.y+1); // "bad vibe" cloud
+        ctx.fillText("☁️", o.x, o.y+1);
         ctx.restore();
       }
     }
 
-    function drawHUD(){
-      ui.score.textContent = String(score);
+    // Sakura petals (simple + lightweight)
+    const petals = Array.from({length: 28}, () => ({
+      x: rand(0, W),
+      y: rand(-H, 0),
+      r: rand(2.2, 4.2),
+      vy: rand(18, 45),
+      vx: rand(-14, 14),
+      phase: rand(0, Math.PI*2),
+      wobble: rand(1.2, 2.6),
+    }));
+
+    function updatePetals(dt){
+      for (const p of petals){
+        p.y += p.vy * dt;
+        p.x += (p.vx + Math.sin(performance.now()/1000 * p.wobble + p.phase) * 10) * dt;
+        if (p.y > H + 10){
+          p.y = rand(-80, -10);
+          p.x = rand(0, W);
+        }
+        if (p.x < -20) p.x = W + 20;
+        if (p.x > W + 20) p.x = -20;
+      }
+    }
+
+    function drawPetals(){
+      ctx.save();
+      ctx.fillStyle = "rgba(255,180,210,.35)";
+      for (const p of petals){
+        ctx.beginPath();
+        ctx.ellipse(p.x, p.y, p.r*1.2, p.r, Math.sin(p.phase)*0.8, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
     }
 
     // Update loop
     function update(dt){
+      // always animate petals, even in pause
+      updatePetals(dt);
+
       if (!running || gameOver) return;
 
       // player movement
@@ -319,11 +418,11 @@
       if (keys.right) vx += player.speed;
       player.x = clamp(player.x + vx*dt, 30, W-30);
 
-      // difficulty scaling
-      score += Math.floor(dt * 10); // +10 per second approx
+      // score
+      score += Math.floor(dt * 10); // ~10 points/s
       const level = Math.min(1.0, score / 900);
-      spawnInterval = 0.95 - level * 0.45;   // from ~0.95s to ~0.50s
-      obstacleSpeed  = 220 + level * 220;    // from 220 to 440
+      spawnInterval = 0.95 - level * 0.45;   // ~0.95s -> ~0.50s
+      obstacleSpeed  = 220 + level * 220;    // 220 -> 440
 
       // spawn
       spawnTimer += dt;
@@ -336,14 +435,13 @@
       for (let i = obstacles.length - 1; i >= 0; i--){
         const o = obstacles[i];
         o.y += (o.vy + level*180) * dt;
-        // wobble horizontally a bit
         o.x += Math.sin((performance.now()/1000)*o.wobble + o.phase) * 26 * dt;
 
-        if (circleHit(player.x, player.y, player.r*0.85, o.x, o.y, o.r*0.85)){
+        if (circleHit(player.x, player.y, player.r*0.86, o.x, o.y, o.r*0.86)){
           endGame();
           return;
         }
-        if (o.y > H + 60){
+        if (o.y > H + 70){
           obstacles.splice(i, 1);
         }
       }
@@ -352,7 +450,7 @@
     function render(){
       ctx.clearRect(0,0,W,H);
 
-      // background gradient overlay
+      // soft overlay
       ctx.save();
       const g = ctx.createLinearGradient(0,0,0,H);
       g.addColorStop(0, "rgba(255,255,255,.02)");
@@ -362,13 +460,11 @@
       ctx.restore();
 
       drawBackground();
+      drawPetals();
 
-      // obstacles
       for (const o of obstacles) drawObstacle(o);
-
       drawPlayer();
 
-      // banner
       if (gameOver){
         ctx.save();
         ctx.fillStyle = "rgba(0,0,0,.35)";
@@ -383,24 +479,19 @@
         ctx.restore();
       }
 
-      drawHUD();
+      ui.score.textContent = String(score);
     }
 
     function loop(tNow){
       const dt = Math.min(0.033, (tNow - tPrev) / 1000);
       tPrev = tNow;
-
       update(dt);
       render();
-
       requestAnimationFrame(loop);
     }
 
     // Start
-    loadAssets().then(() => {
-      ui.status.textContent = "Go ✨ (gauche/droite)";
-      requestAnimationFrame(loop);
-    });
+    loadAssets().then(() => requestAnimationFrame(loop));
   </script>
 </body>
 </html>
