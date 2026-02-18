@@ -3,13 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Clara Dodge ✿</title>
+  <title>Clara Road ✿</title>
   <style>
     :root{
-      --bg1:#0b1220; --bg2:#111a2e;
+      --bg1:#071021; --bg2:#0b1a33;
       --txt: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.72);
-      --stroke: rgba(255,255,255,.16);
+      --muted: rgba(255,255,255,.70);
+      --stroke: rgba(255,255,255,.14);
       --card: rgba(255,255,255,.08);
     }
     *{box-sizing:border-box}
@@ -18,15 +18,16 @@
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       background:
         radial-gradient(1100px 600px at 12% 10%, rgba(255,105,180,.18), transparent 60%),
-        radial-gradient(900px 500px at 90% 25%, rgba(0,200,255,.18), transparent 55%),
-        radial-gradient(800px 500px at 55% 95%, rgba(160,255,200,.12), transparent 55%),
+        radial-gradient(900px 500px at 88% 20%, rgba(0,200,255,.16), transparent 55%),
         linear-gradient(180deg,var(--bg1),var(--bg2));
       display:flex; align-items:center; justify-content:center; padding:22px;
     }
     .wrap{width:min(980px,100%); display:grid; gap:12px;}
     .card{
-      background:var(--card); border:1px solid var(--stroke);
-      border-radius:18px; overflow:hidden;
+      background:var(--card);
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      overflow:hidden;
       box-shadow: 0 20px 60px rgba(0,0,0,.45);
     }
     header{padding:18px 18px 10px;}
@@ -60,68 +61,53 @@
       font-weight:650;
     }
     button:hover{ background: rgba(255,255,255,.10); }
-
-    /* Small overlay label */
-    .hint{
-      position:absolute;
-      right:18px;
-      top:16px;
-      font-size:12px;
-      color:rgba(255,255,255,.65);
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(0,0,0,.18);
-      padding:6px 10px;
-      border-radius:999px;
-    }
-    .cardWrap{position:relative}
   </style>
 </head>
+
 <body>
   <main class="wrap">
-    <section class="card cardWrap">
-      <div class="hint">✿ Cute + simple + fun</div>
+    <section class="card">
       <header>
-        <h1>Clara Dodge ✿</h1>
-        <p>Gauche / Droite (ou A / D) pour bouger. Esquive les “bad vibes”. Bonus: <b>C</b> (message cute).</p>
+        <h1>Clara Road ✿</h1>
+        <p>Choisis une voie : gauche / milieu / droite. Esquive les “bad vibes”. Ça accélère petit à petit.</p>
       </header>
 
       <div class="row">
-        <span class="pill">⬅️ ➡️ / A D</span>
+        <span class="pill">⬅️ ➡️ : changer de voie</span>
+        <span class="pill">A / D : changer de voie</span>
         <span class="pill">Espace : pause</span>
         <span class="pill">R : restart</span>
-        <span class="pill">Objectif : survivre + score</span>
+        <span class="pill">M : musique ON/OFF</span>
       </div>
 
-      <canvas id="game" width="900" height="520" aria-label="Jeu"></canvas>
+      <canvas id="game" width="900" height="520"></canvas>
 
       <div class="footer">
         <div>
           <span id="status">Chargement…</span>
           <span style="margin-left:10px">Score: <b id="score">0</b></span>
           <span style="margin-left:10px">Best: <b id="best">0</b></span>
+          <span style="margin-left:10px">Vitesse: <b id="spd">1.0x</b></span>
         </div>
         <div style="display:flex; gap:10px; flex-wrap:wrap">
           <button id="btnRestart">Restart</button>
-          <button id="btnMute">Sound: OFF</button>
+          <button id="btnMusic">Music: OFF</button>
         </div>
       </div>
     </section>
   </main>
 
   <script>
-    /**
-     * IMPORTANT
-     * Place these files at the ROOT of your GitHub repo (same folder as index.html):
-     *   - clara.jpeg      (player image)
-     *   - obstacle.jpeg   (obstacle image: a "bad vibe" icon/image)
-     *
-     * You can test:
-     *   https://sfoowfetout-ai.github.io/for-clara/clara.jpeg
-     *   https://sfoowfetout-ai.github.io/for-clara/obstacle.jpeg
-     */
+    // =======================
+    // ASSETS (mets ces fichiers à la racine du repo)
+    // =======================
+    // - clara.jpeg
+    // - badvibe.jpeg   (renomme ton "Ahmed.jpeg" en badvibe.jpeg)
+    // - music.mp3      (optionnel) => sinon on génère une musique simple
     const ASSETS = {
       player: "clara.jpeg",
-      obstacle: "obstacle.jpeg",
+      enemy: "badvibe.jpeg",
+      music: "music.mp3"
     };
 
     const canvas = document.getElementById("game");
@@ -131,52 +117,44 @@
       status: document.getElementById("status"),
       score: document.getElementById("score"),
       best: document.getElementById("best"),
+      spd: document.getElementById("spd"),
       btnRestart: document.getElementById("btnRestart"),
-      btnMute: document.getElementById("btnMute"),
+      btnMusic: document.getElementById("btnMusic"),
     };
 
-    // Persistent best score
-    const BEST_KEY = "clara_dodge_best";
-    ui.best.textContent = String(Number(localStorage.getItem(BEST_KEY) || 0));
+    // Best score persist
+    const BEST_KEY = "clara_road_best";
+    let best = Number(localStorage.getItem(BEST_KEY) || 0);
+    ui.best.textContent = String(best);
 
-    // Game config
     const W = canvas.width, H = canvas.height;
-    const laneY = H - 110;
-    const player = { x: W/2, y: laneY, r: 34, speed: 520 };
-    const obstacles = [];
-    let keys = { left:false, right:false };
+
+    // 3 lanes
+    const laneX = [W * 0.30, W * 0.50, W * 0.70];
+    const roadLeft = W * 0.20;
+    const roadRight = W * 0.80;
+
+    const player = {
+      lane: 1, // 0 left, 1 mid, 2 right
+      x: laneX[1],
+      y: H - 95,
+      r: 28
+    };
+
+    const enemies = [];
     let running = true;
     let gameOver = false;
-    let tPrev = performance.now();
     let score = 0;
-    let best = Number(localStorage.getItem(BEST_KEY) || 0);
-
-    // Difficulty
+    let speed = 1.0;        // increases over time
+    let baseEnemySpeed = 210;
     let spawnTimer = 0;
-    let spawnInterval = 0.9; // seconds
-    let obstacleSpeed = 220; // px/sec
+    let spawnEvery = 0.85;  // seconds (will decrease a bit)
+    let tPrev = performance.now();
 
-    // Sound (minimal)
-    let soundOn = false;
-    const beep = (freq=440, ms=60) => {
-      if (!soundOn) return;
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return;
-      const ac = new AC();
-      const o = ac.createOscillator();
-      const g = ac.createGain();
-      o.frequency.value = freq;
-      o.type = "sine";
-      o.connect(g); g.connect(ac.destination);
-      g.gain.value = 0.05;
-      o.start();
-      setTimeout(()=>{ try{ o.stop(); }catch{} try{ ac.close(); }catch{} }, ms);
-    };
-
-    // Load images (optional)
-    const imgPlayer = new Image();
-    const imgObstacle = new Image();
-    let hasPlayerImg = false, hasObstacleImg = false;
+    // Images
+    const imgP = new Image();
+    const imgE = new Image();
+    let hasP = false, hasE = false;
 
     function tryLoad(img, url){
       return new Promise((resolve) => {
@@ -186,17 +164,46 @@
       });
     }
 
-    async function loadAssets(){
-      hasPlayerImg = await tryLoad(imgPlayer, ASSETS.player);
-      hasObstacleImg = await tryLoad(imgObstacle, ASSETS.obstacle);
-      ui.status.textContent = "Go ✨ (gauche/droite)";
+    // Music: try file music.mp3, else simple generated synth
+    let musicOn = false;
+    let audioEl = null;
+
+    function setupAudio(){
+      // Try to load file
+      audioEl = new Audio();
+      audioEl.loop = true;
+      audioEl.src = ASSETS.music;
+      audioEl.addEventListener("error", () => {
+        // If file missing, we keep audioEl but won't rely on it
+      });
     }
 
-    // Input
-    function onKeyDown(e){
+    async function toggleMusic(force){
+      const next = (typeof force === "boolean") ? force : !musicOn;
+      musicOn = next;
+      ui.btnMusic.textContent = "Music: " + (musicOn ? "ON" : "OFF");
+
+      if (!audioEl) setupAudio();
+
+      if (musicOn){
+        try { await audioEl.play(); } catch(e) {
+          // Autoplay may be blocked until user interaction; it's fine.
+        }
+      } else {
+        try { audioEl.pause(); } catch(e) {}
+      }
+    }
+
+    // Input lane switch
+    function setLane(l){
+      player.lane = Math.max(0, Math.min(2, l));
+      player.x = laneX[player.lane];
+    }
+
+    window.addEventListener("keydown", (e) => {
       const k = (e.key || "").toLowerCase();
-      if (k === "arrowleft" || k === "a") keys.left = true;
-      if (k === "arrowright" || k === "d") keys.right = true;
+      if (k === "arrowleft" || k === "a") setLane(player.lane - 1);
+      if (k === "arrowright" || k === "d") setLane(player.lane + 1);
 
       if (k === " "){
         e.preventDefault();
@@ -204,67 +211,29 @@
         ui.status.textContent = running ? "Go ✨" : "Pause";
       }
       if (k === "r") restart();
-
-      // Cute bonus message (not direct)
-      if (k === "c"){
-        ui.status.textContent = "Molt bé Clara ✿ (tu gères)";
-        beep(660, 70);
-      }
-    }
-    function onKeyUp(e){
-      const k = (e.key || "").toLowerCase();
-      if (k === "arrowleft" || k === "a") keys.left = false;
-      if (k === "arrowright" || k === "d") keys.right = false;
-    }
-    window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("keyup", onKeyUp);
-
-    ui.btnRestart.addEventListener("click", restart);
-    ui.btnMute.addEventListener("click", () => {
-      soundOn = !soundOn;
-      ui.btnMute.textContent = "Sound: " + (soundOn ? "ON" : "OFF");
-      beep(660, 70);
+      if (k === "m") toggleMusic();
     });
 
-    // Utilities
-    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
-    const rand = (a,b) => a + Math.random() * (b-a);
-
-    function circleHit(ax, ay, ar, bx, by, br){
-      const dx = ax - bx, dy = ay - by;
-      return (dx*dx + dy*dy) <= (ar+br)*(ar+br);
-    }
-
-    function spawnObstacle(){
-      obstacles.push({
-        x: rand(50, W-50),
-        y: -40,
-        r: rand(22, 34),
-        vy: obstacleSpeed + rand(-25, 45),
-        wobble: rand(0.6, 1.6),
-        phase: rand(0, Math.PI*2),
-      });
-    }
+    ui.btnRestart.addEventListener("click", restart);
+    ui.btnMusic.addEventListener("click", () => toggleMusic());
 
     function restart(){
-      obstacles.length = 0;
+      enemies.length = 0;
       score = 0;
+      speed = 1.0;
       spawnTimer = 0;
-      spawnInterval = 0.9;
-      obstacleSpeed = 220;
-      player.x = W/2;
+      spawnEvery = 0.85;
+      baseEnemySpeed = 210;
       running = true;
       gameOver = false;
+      setLane(1);
       ui.status.textContent = "Go ✨";
-      beep(520, 80);
     }
 
     function endGame(){
       gameOver = true;
       running = false;
       ui.status.textContent = "Game Over — R ou Restart";
-      beep(220, 120);
-
       if (score > best){
         best = score;
         localStorage.setItem(BEST_KEY, String(best));
@@ -272,125 +241,46 @@
       }
     }
 
-    // Render helpers
-    function drawBackground(){
-      // subtle stars
-      ctx.save();
-      ctx.fillStyle = "rgba(255,255,255,.06)";
-      for (let i=0;i<36;i++){
-        const x = (i*173) % W;
-        const y = (i*97) % (H-80);
-        ctx.beginPath();
-        ctx.arc(x, y, (i%3)+0.6, 0, Math.PI*2);
-        ctx.fill();
-      }
-      // ground line
-      ctx.strokeStyle = "rgba(255,255,255,.10)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(0, laneY + 46);
-      ctx.lineTo(W, laneY + 46);
-      ctx.stroke();
-      ctx.restore();
+    function rand(a,b){ return a + Math.random() * (b-a); }
+
+    function spawnEnemy(){
+      // avoid spawning exactly on player lane too often
+      const lane = (Math.random() < 0.55) ? Math.floor(rand(0,3)) : ((player.lane + (Math.random()<0.5?1:2)) % 3);
+      enemies.push({
+        lane,
+        x: laneX[lane],
+        y: -70,
+        r: 26,
+        vy: (baseEnemySpeed + rand(-15, 40)) * speed
+      });
     }
 
-    function drawPlayer(){
-      if (hasPlayerImg){
-        const size = player.r*2.2;
-        ctx.save();
-        // draw as circle-cropped
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(imgPlayer, player.x - size/2, player.y - size/2, size, size);
-        ctx.restore();
-
-        // outline
-        ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,.25)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
-        ctx.stroke();
-        ctx.restore();
-      } else {
-        // fallback cute circle
-        ctx.save();
-        ctx.fillStyle = "rgba(255,160,200,.28)";
-        ctx.beginPath();
-        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,.25)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,255,.9)";
-        ctx.font = "24px system-ui";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("✿", player.x, player.y+1);
-        ctx.restore();
-      }
+    function hit(ax, ay, ar, bx, by, br){
+      const dx = ax - bx, dy = ay - by;
+      return (dx*dx + dy*dy) <= (ar+br)*(ar+br);
     }
 
-    function drawObstacle(o){
-      if (hasObstacleImg){
-        const size = o.r*2.2;
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, o.r, 0, Math.PI*2);
-        ctx.closePath();
-        ctx.clip();
-        ctx.drawImage(imgObstacle, o.x - size/2, o.y - size/2, size, size);
-        ctx.restore();
-
-        ctx.save();
-        ctx.strokeStyle = "rgba(255,255,255,.18)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, o.r, 0, Math.PI*2);
-        ctx.stroke();
-        ctx.restore();
-      } else {
-        // fallback cloud
-        ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,.22)";
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, o.r, 0, Math.PI*2);
-        ctx.fill();
-        ctx.strokeStyle = "rgba(255,255,255,.18)";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        ctx.fillStyle = "rgba(255,255,255,.85)";
-        ctx.font = "20px system-ui";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("☁️", o.x, o.y+1);
-        ctx.restore();
-      }
-    }
-
-    // Sakura petals (simple + lightweight)
-    const petals = Array.from({length: 28}, () => ({
-      x: rand(0, W),
+    // Sakura petals
+    const petals = Array.from({length: 26}, () => ({
+      x: rand(roadLeft, roadRight),
       y: rand(-H, 0),
-      r: rand(2.2, 4.2),
-      vy: rand(18, 45),
-      vx: rand(-14, 14),
+      r: rand(2.0, 4.2),
+      vy: rand(18, 42),
+      vx: rand(-12, 12),
       phase: rand(0, Math.PI*2),
       wobble: rand(1.2, 2.6),
     }));
 
     function updatePetals(dt){
       for (const p of petals){
-        p.y += p.vy * dt;
+        p.y += (p.vy * (0.8 + speed*0.08)) * dt;
         p.x += (p.vx + Math.sin(performance.now()/1000 * p.wobble + p.phase) * 10) * dt;
         if (p.y > H + 10){
           p.y = rand(-80, -10);
-          p.x = rand(0, W);
+          p.x = rand(roadLeft, roadRight);
         }
-        if (p.x < -20) p.x = W + 20;
-        if (p.x > W + 20) p.x = -20;
+        if (p.x < roadLeft - 20) p.x = roadRight + 20;
+        if (p.x > roadRight + 20) p.x = roadLeft - 20;
       }
     }
 
@@ -405,72 +295,127 @@
       ctx.restore();
     }
 
-    // Update loop
-    function update(dt){
-      // always animate petals, even in pause
-      updatePetals(dt);
+    function drawRoad(){
+      // Road body
+      ctx.save();
+      ctx.fillStyle = "rgba(0,0,0,.22)";
+      ctx.fillRect(roadLeft, 0, roadRight - roadLeft, H);
 
-      if (!running || gameOver) return;
-
-      // player movement
-      let vx = 0;
-      if (keys.left) vx -= player.speed;
-      if (keys.right) vx += player.speed;
-      player.x = clamp(player.x + vx*dt, 30, W-30);
-
-      // score
-      score += Math.floor(dt * 10); // ~10 points/s
-      const level = Math.min(1.0, score / 900);
-      spawnInterval = 0.95 - level * 0.45;   // ~0.95s -> ~0.50s
-      obstacleSpeed  = 220 + level * 220;    // 220 -> 440
-
-      // spawn
-      spawnTimer += dt;
-      if (spawnTimer >= spawnInterval){
-        spawnTimer = 0;
-        spawnObstacle();
+      // Lane separators
+      ctx.strokeStyle = "rgba(255,255,255,.12)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([18, 14]);
+      for (let i=1;i<=2;i++){
+        const x = (roadLeft + (roadRight-roadLeft)*(i/3));
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, H);
+        ctx.stroke();
       }
+      ctx.setLineDash([]);
 
-      // obstacles move & collision
-      for (let i = obstacles.length - 1; i >= 0; i--){
-        const o = obstacles[i];
-        o.y += (o.vy + level*180) * dt;
-        o.x += Math.sin((performance.now()/1000)*o.wobble + o.phase) * 26 * dt;
+      // Side borders
+      ctx.strokeStyle = "rgba(255,255,255,.18)";
+      ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(roadLeft, 0); ctx.lineTo(roadLeft, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(roadRight, 0); ctx.lineTo(roadRight, H); ctx.stroke();
+      ctx.restore();
+    }
 
-        if (circleHit(player.x, player.y, player.r*0.86, o.x, o.y, o.r*0.86)){
-          endGame();
-          return;
-        }
-        if (o.y > H + 70){
-          obstacles.splice(i, 1);
-        }
+    function drawPlayer(){
+      const size = player.r*2.3;
+      if (hasP){
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(imgP, player.x - size/2, player.y - size/2, size, size);
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,.25)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.fillStyle = "rgba(255,160,200,.28)";
+        ctx.beginPath();
+        ctx.arc(player.x, player.y, player.r, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,.25)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,.9)";
+        ctx.font = "22px system-ui";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("✿", player.x, player.y+1);
+        ctx.restore();
+      }
+    }
+
+    function drawEnemy(e){
+      const size = e.r*2.3;
+      if (hasE){
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        ctx.closePath();
+        ctx.clip();
+        ctx.drawImage(imgE, e.x - size/2, e.y - size/2, size, size);
+        ctx.restore();
+
+        ctx.save();
+        ctx.strokeStyle = "rgba(255,255,255,.16)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        ctx.stroke();
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,.28)";
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = "rgba(255,255,255,.14)";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.fillStyle = "rgba(255,255,255,.85)";
+        ctx.font = "20px system-ui";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("☁️", e.x, e.y+1);
+        ctx.restore();
       }
     }
 
     function render(){
       ctx.clearRect(0,0,W,H);
 
-      // soft overlay
-      ctx.save();
+      // subtle overlay
       const g = ctx.createLinearGradient(0,0,0,H);
       g.addColorStop(0, "rgba(255,255,255,.02)");
-      g.addColorStop(1, "rgba(0,0,0,.08)");
+      g.addColorStop(1, "rgba(0,0,0,.12)");
       ctx.fillStyle = g;
       ctx.fillRect(0,0,W,H);
-      ctx.restore();
 
-      drawBackground();
+      drawRoad();
       drawPetals();
 
-      for (const o of obstacles) drawObstacle(o);
+      for (const e of enemies) drawEnemy(e);
       drawPlayer();
 
       if (gameOver){
         ctx.save();
-        ctx.fillStyle = "rgba(0,0,0,.35)";
-        ctx.fillRect(0, H/2 - 56, W, 112);
+        ctx.fillStyle = "rgba(0,0,0,.40)";
+        ctx.fillRect(0, H/2 - 58, W, 116);
         ctx.fillStyle = "rgba(255,255,255,.92)";
-        ctx.font = "bold 28px system-ui";
+        ctx.font = "bold 30px system-ui";
         ctx.textAlign = "center";
         ctx.fillText("Game Over", W/2, H/2 - 10);
         ctx.fillStyle = "rgba(255,255,255,.75)";
@@ -480,18 +425,61 @@
       }
 
       ui.score.textContent = String(score);
+      ui.spd.textContent = speed.toFixed(1) + "x";
+    }
+
+    function update(dt){
+      updatePetals(dt);
+
+      if (!running || gameOver) return;
+
+      // Score & speed ramp
+      score += Math.floor(dt * 12); // ~12 points/s
+      speed = 1.0 + Math.min(2.5, score / 700); // 1.0x -> up to 3.5x
+
+      // Spawn gets faster
+      spawnEvery = Math.max(0.38, 0.85 - (speed-1)*0.18);
+
+      spawnTimer += dt;
+      if (spawnTimer >= spawnEvery){
+        spawnTimer = 0;
+        spawnEnemy();
+      }
+
+      // Enemies movement and collision
+      for (let i=enemies.length-1; i>=0; i--){
+        const e = enemies[i];
+        e.y += (baseEnemySpeed * speed) * dt;
+
+        if (hit(player.x, player.y, player.r*0.9, e.x, e.y, e.r*0.9)){
+          endGame();
+          return;
+        }
+        if (e.y > H + 80){
+          enemies.splice(i,1);
+        }
+      }
     }
 
     function loop(tNow){
-      const dt = Math.min(0.033, (tNow - tPrev) / 1000);
+      const dt = Math.min(0.033, (tNow - tPrev)/1000);
       tPrev = tNow;
       update(dt);
       render();
       requestAnimationFrame(loop);
     }
 
-    // Start
-    loadAssets().then(() => requestAnimationFrame(loop));
+    async function init(){
+      setupAudio();
+
+      hasP = await tryLoad(imgP, ASSETS.player);
+      hasE = await tryLoad(imgE, ASSETS.enemy);
+
+      ui.status.textContent = "Go ✨ (3 voies)";
+      requestAnimationFrame(loop);
+    }
+
+    init();
   </script>
 </body>
 </html>
