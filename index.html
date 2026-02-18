@@ -3,37 +3,36 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Clara Runner ✿</title>
+  <title>Clara Runner</title>
   <style>
     :root{
-      --bg0:#070b12;
-      --bg1:#0b1324;
-      --bg2:#0e1a32;
+      --bg0:#05070c;
+      --bg1:#0a1020;
+      --bg2:#0d1a33;
 
-      --glass: rgba(255,255,255,.08);
-      --glass2: rgba(255,255,255,.12);
-      --stroke: rgba(255,255,255,.14);
       --txt: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.70);
+      --muted: rgba(255,255,255,.72);
+      --stroke: rgba(255,255,255,.14);
+      --glass: rgba(255,255,255,.08);
 
-      --accent:#ff3b6a;     /* modern pink-red */
-      --sea:#20c7d5;        /* mediterranean cyan */
-      --gold:#f7c76a;       /* warm detail */
+      --accent:#ff2f5a;
+      --sea:#21c0d1;
+      --gold:#f3c46c;
 
-      --shadow: 0 20px 65px rgba(0,0,0,.45);
+      --shadow: 0 22px 70px rgba(0,0,0,.50);
       --radius: 18px;
     }
 
     *{box-sizing:border-box}
-    html, body{height:100%}
+    html,body{height:100%}
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
       color:var(--txt);
       background:
-        radial-gradient(1200px 700px at 12% 15%, rgba(255,59,106,.18), transparent 62%),
-        radial-gradient(1000px 650px at 88% 22%, rgba(32,199,213,.18), transparent 60%),
-        radial-gradient(900px 520px at 55% 92%, rgba(247,199,106,.10), transparent 60%),
+        radial-gradient(1200px 700px at 12% 15%, rgba(255,47,90,.16), transparent 62%),
+        radial-gradient(1100px 650px at 88% 20%, rgba(33,192,209,.16), transparent 60%),
+        radial-gradient(900px 520px at 55% 92%, rgba(243,196,108,.10), transparent 60%),
         linear-gradient(180deg,var(--bg0),var(--bg2));
       display:flex;
       align-items:center;
@@ -42,13 +41,13 @@
     }
 
     .wrap{
-      width:min(1040px, 100%);
+      width:min(1100px, 100%);
       display:grid;
       gap:12px;
     }
 
     .card{
-      background: linear-gradient(180deg, rgba(255,255,255,.09), rgba(255,255,255,.05));
+      background: linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.05));
       border:1px solid var(--stroke);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
@@ -61,9 +60,9 @@
       height:10px;
       background:
         repeating-linear-gradient(90deg,
-          rgba(255,59,106,.9) 0 28px,
-          rgba(247,199,106,.9) 28px 56px,
-          rgba(32,199,213,.9) 56px 84px
+          rgba(255,47,90,.9) 0 30px,
+          rgba(243,196,108,.9) 30px 60px,
+          rgba(33,192,209,.9) 60px 90px
         );
     }
 
@@ -72,21 +71,23 @@
       display:flex;
       align-items:flex-start;
       justify-content:space-between;
-      gap:14px;
+      gap:12px;
       flex-wrap:wrap;
     }
 
     .title h1{
       margin:0 0 6px;
-      font-size: clamp(20px, 2.2vw, 28px);
+      font-size: clamp(20px, 2.2vw, 30px);
       letter-spacing:-.02em;
       line-height:1.1;
     }
+
     .title p{
       margin:0;
       color:var(--muted);
       font-size:14.5px;
       line-height:1.5;
+      max-width: 760px;
     }
 
     .chips{
@@ -96,16 +97,17 @@
       align-items:center;
       justify-content:flex-end;
     }
+
     .chip{
       border:1px solid rgba(255,255,255,.16);
       background: rgba(0,0,0,.18);
       padding:7px 10px;
       border-radius:999px;
       font-size:12.5px;
-      color: rgba(255,255,255,.78);
+      color: rgba(255,255,255,.80);
       user-select:none;
+      white-space:nowrap;
     }
-    .chip b{color:rgba(255,255,255,.92)}
 
     canvas{
       width:100%;
@@ -113,6 +115,9 @@
       display:block;
       border-top:1px solid rgba(255,255,255,.10);
       border-bottom:1px solid rgba(255,255,255,.10);
+      background:
+        radial-gradient(1100px 520px at 50% 35%, rgba(33,192,209,.08), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,.10));
     }
 
     .footer{
@@ -122,11 +127,11 @@
       justify-content:space-between;
       gap:10px;
       flex-wrap:wrap;
-      color: rgba(255,255,255,.72);
+      color: rgba(255,255,255,.74);
       font-size:12.5px;
     }
 
-    .leftHud{
+    .hud{
       display:flex;
       align-items:center;
       gap:10px;
@@ -161,51 +166,54 @@
     }
     button:hover{ background: rgba(255,255,255,.10); }
     button:active{ transform: scale(.98); }
+
     .primary{
-      background: rgba(255,59,106,.18);
-      border-color: rgba(255,59,106,.35);
+      background: rgba(255,47,90,.18);
+      border-color: rgba(255,47,90,.35);
     }
     .primary:hover{
-      background: rgba(255,59,106,.26);
-      border-color: rgba(255,59,106,.48);
+      background: rgba(255,47,90,.26);
+      border-color: rgba(255,47,90,.48);
     }
 
     .hint{
-      color: rgba(255,255,255,.70);
+      opacity:.9;
       font-size:12px;
-      opacity:.95;
+      color: rgba(255,255,255,.70);
     }
   </style>
 </head>
+
 <body>
   <main class="wrap">
     <section class="card">
       <div class="topbar"></div>
+
       <header>
         <div class="title">
-          <h1>Clara Runner ✿</h1>
+          <h1>Clara Runner</h1>
           <p>
-            3 voies + saut. Esquive les obstacles, ambiance “Catalunya vintage” (bâtiments + drapeaux).
-            Contrôles : <b>⬅️ ➡️</b> (ou <b>A/D</b>) + <b>⬆️</b> / <b>W</b> / <b>Espace</b> pour sauter.
+            Jeu type endless runner. Flèches gauche/droite pour changer de voie. Espace pour sauter.
+            P pour pause. R pour recommencer.
           </p>
         </div>
-
         <div class="chips">
-          <span class="chip"><b>⬅️ ➡️</b> lane</span>
-          <span class="chip"><b>⬆️</b> jump</span>
-          <span class="chip"><b>Space</b> pause</span>
-          <span class="chip"><b>R</b> restart</span>
+          <span class="chip">Left/Right: lane</span>
+          <span class="chip">Space: jump</span>
+          <span class="chip">P: pause</span>
+          <span class="chip">R: restart</span>
         </div>
       </header>
 
-      <canvas id="game" width="980" height="560"></canvas>
+      <canvas id="game" width="1024" height="600"></canvas>
 
       <div class="footer">
-        <div class="leftHud">
-          <div class="stat">Status: <b id="status">Loading…</b></div>
+        <div class="hud">
+          <div class="stat">Status: <b id="status">Loading</b></div>
           <div class="stat">Score: <b id="score">0</b></div>
           <div class="stat">Best: <b id="best">0</b></div>
           <div class="stat">Level: <b id="level">1</b></div>
+          <div class="stat">Multiplier: <b id="mult">x1.0</b></div>
           <span class="hint" id="hint"></span>
         </div>
 
@@ -218,22 +226,20 @@
   </main>
 
   <script>
-    /******************************************************************
-     * FILES (repo root):
+    /**********************************************************************
+     * Place in repo root:
      * - clara.png
-     * - badvibes.png   (rename your obstacle to this name)
-     * - music.mp3      (optional)
-     *
-     * If you update images, bump ASSET_VERSION to bust cache.
-     ******************************************************************/
-    const ASSET_VERSION = "v7";
+     * - badvibes.png
+     * - music.mp3 (optional)
+     * If your browser caches old assets, change ASSET_VERSION.
+     **********************************************************************/
+    const ASSET_VERSION = "v12";
     const ASSETS = {
       player: `clara.png?${ASSET_VERSION}`,
       obstacle: `badvibes.png?${ASSET_VERSION}`,
-      music: `music.mp3?${ASSET_VERSION}`,
+      music: `music.mp3?${ASSET_VERSION}`
     };
 
-    // Canvas setup
     const canvas = document.getElementById("game");
     const ctx = canvas.getContext("2d");
 
@@ -242,86 +248,20 @@
       score: document.getElementById("score"),
       best: document.getElementById("best"),
       level: document.getElementById("level"),
+      mult: document.getElementById("mult"),
       hint: document.getElementById("hint"),
       btnRestart: document.getElementById("btnRestart"),
       btnMusic: document.getElementById("btnMusic"),
     };
 
-    // Persistent best score
-    const BEST_KEY = "clara_runner_best_rich";
+    // persistent best
+    const BEST_KEY = "clara_runner_best_pro";
     let best = Number(localStorage.getItem(BEST_KEY) || 0);
     ui.best.textContent = String(best);
 
     const W = canvas.width, H = canvas.height;
 
-    // Road geometry with perspective
-    const road = {
-      topY: 86,
-      botY: H - 40,
-      topW: W * 0.16,
-      botW: W * 0.74,
-      cx: W / 2,
-    };
-
-    const lanes = [-1, 0, 1];
-    const laneIndex = (lane) => lane === -1 ? 0 : (lane === 0 ? 1 : 2);
-
-    function roadWidthAt(y){
-      const t = (y - road.topY) / (road.botY - road.topY);
-      return road.topW + t * (road.botW - road.topW);
-    }
-    function roadLeftAt(y){
-      const w = roadWidthAt(y);
-      return road.cx - w/2;
-    }
-    function laneX(lane, y){
-      const left = roadLeftAt(y);
-      const w = roadWidthAt(y);
-      const lw = w / 3;
-      return left + lw * (laneIndex(lane) + 0.5);
-    }
-
-    // Skyline + buildings (parallax layers)
-    const world = {
-      t: 0,
-      scroll: 0,     // increases with speed
-      speed: 270,    // base, increases with level
-      spawnEvery: 0.85,
-      spawnTimer: 0,
-      score: 0,
-      level: 1,
-      running: true,
-      gameOver: false,
-      lastT: performance.now(),
-    };
-
-    // Player physics (lane switch + jump)
-    const player = {
-      lane: 0,
-      y: H - 150,
-      x: laneX(0, H - 150),
-      r: 34,
-
-      // lane switching
-      switching: false,
-      fromLane: 0,
-      toLane: 0,
-      switchT: 0,
-      switchDuration: 0.09,
-
-      // jump
-      jumping: false,
-      jumpVy: 0,
-      z: 0,            // vertical offset (screen)
-      zMax: 0,         // for shadow scaling
-      gravity: 2600,   // px/s^2
-      jumpPower: 950,  // initial jump velocity
-    };
-
-    // Obstacles
-    let obstacles = [];
-
-    // Audio (must be user-triggered)
+    // Audio (user gesture required)
     const audio = new Audio();
     audio.loop = true;
     audio.preload = "auto";
@@ -352,17 +292,89 @@
       if (!hasObstacle) missing.push("badvibes.png");
 
       if (missing.length){
-        ui.hint.textContent = `Images manquantes: ${missing.join(", ")} (nom exact + extension)`;
-        ui.status.textContent = "OK (fallback)";
+        ui.hint.textContent = "Missing: " + missing.join(", ");
+        ui.status.textContent = "Fallback";
       } else {
         ui.hint.textContent = "";
-        ui.status.textContent = "Go ✨";
+        ui.status.textContent = "Ready";
       }
     }
 
+    // Perspective road (Subway-like)
+    const road = {
+      cx: W/2,
+      topY: 90,
+      botY: H - 46,
+      topW: W * 0.16,
+      botW: W * 0.78,
+    };
+    const lanes = [-1, 0, 1];
+    const laneIndex = (lane) => lane === -1 ? 0 : (lane === 0 ? 1 : 2);
+
+    function roadWAt(y){
+      const t = (y - road.topY) / (road.botY - road.topY);
+      return road.topW + t*(road.botW - road.topW);
+    }
+    function roadLeftAt(y){
+      const w = roadWAt(y);
+      return road.cx - w/2;
+    }
+    function laneX(lane, y){
+      const left = roadLeftAt(y);
+      const w = roadWAt(y);
+      const lw = w/3;
+      return left + lw*(laneIndex(lane) + 0.5);
+    }
+
+    // Game state
+    const game = {
+      state: "start",      // start | play | pause | over
+      lastT: performance.now(),
+      t: 0,
+      scroll: 0,
+      speed: 290,
+      spawnTimer: 0,
+      spawnEvery: 0.88,
+      score: 0,
+      level: 1,
+      mult: 1.0,
+      combo: 0,
+      shake: 0,
+      film: 0,
+    };
+
+    // Player
+    const player = {
+      lane: 0,
+      y: H - 155,
+      x: laneX(0, H - 155),
+      r: 34,
+
+      // lane switch feel
+      switching: false,
+      fromLane: 0,
+      toLane: 0,
+      switchT: 0,
+      switchDuration: 0.085,
+
+      // jump
+      jumping: false,
+      z: 0,
+      vz: 0,
+      gravity: 2800,
+      jumpPower: 980,
+    };
+
+    // Entities
+    let obstacles = [];
+    let coins = [];
+    let particles = [];
+
     // Controls
+    const keys = { left:false, right:false };
+
     function requestLane(delta){
-      if (world.gameOver) return;
+      if (game.state !== "play") return;
       const idx = lanes.indexOf(player.lane);
       const next = lanes[Math.max(0, Math.min(2, idx + delta))];
       if (next === player.lane) return;
@@ -375,293 +387,417 @@
     }
 
     function tryJump(){
-      if (world.gameOver) return;
+      if (game.state !== "play") return;
       if (player.jumping) return;
       player.jumping = true;
-      player.jumpVy = player.jumpPower;
-      player.z = 0;
-      player.zMax = 0;
+      player.vz = player.jumpPower;
     }
 
-    window.addEventListener("keydown", (e) => {
-      const k = (e.key || "").toLowerCase();
-      if (k === "arrowleft" || k === "a") requestLane(-1);
-      if (k === "arrowright" || k === "d") requestLane(+1);
-
-      if (k === "arrowup" || k === "w") tryJump();
-
-      if (k === " "){
-        // Space is both jump and pause: if running => jump; if paused => resume
-        e.preventDefault();
-        if (!world.running) {
-          world.running = true;
-          ui.status.textContent = "Go ✨";
-        } else {
-          // jump first; hold Shift+Space to pause
-          if (e.shiftKey) {
-            world.running = false;
-            ui.status.textContent = "Pause";
-          } else {
-            tryJump();
-          }
-        }
-      }
-
-      if (k === "r") restart();
-    });
-
-    ui.btnRestart.addEventListener("click", restart);
-
-    ui.btnMusic.addEventListener("click", async () => {
-      if (!musicReady){
-        ui.status.textContent = "Ajoute music.mp3 (optionnel)";
-        return;
-      }
-      if (audio.paused){
-        try { await audio.play(); ui.btnMusic.textContent = "Stop music"; }
-        catch { ui.status.textContent = "Audio bloqué (re-clique)"; }
-      } else {
-        audio.pause();
-        ui.btnMusic.textContent = "Play music";
-      }
-    });
-
-    // Helpers
-    function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
-    function rand(a,b){ return a + Math.random()*(b-a); }
-
-    function circleHit(ax, ay, ar, bx, by, br){
-      const dx = ax - bx, dy = ay - by;
-      return (dx*dx + dy*dy) <= (ar+br)*(ar+br);
-    }
-
-    // Spawn obstacles — including "double" spawns at higher level
-    function spawnObstacle(){
-      const lvl = world.level;
-
-      // base single obstacle
-      const lane = lanes[Math.floor(Math.random()*3)];
-      obstacles.push({ lane, y: road.topY - 40, r: 16, kind: "single" });
-
-      // starting from lvl 4, sometimes spawn a second obstacle in another lane
-      if (lvl >= 4 && Math.random() < clamp(0.10 + lvl*0.03, 0, 0.55)) {
-        let lane2 = lane;
-        while (lane2 === lane) lane2 = lanes[Math.floor(Math.random()*3)];
-        obstacles.push({ lane: lane2, y: road.topY - 70, r: 16, kind: "double" });
-      }
-
-      // starting from lvl 7, sometimes spawn a "pair" closer together
-      if (lvl >= 7 && Math.random() < clamp(0.06 + lvl*0.02, 0, 0.35)) {
-        // block two lanes at once (leaves one safe lane)
-        const safe = lanes[Math.floor(Math.random()*3)];
-        for (const ln of lanes){
-          if (ln !== safe){
-            obstacles.push({ lane: ln, y: road.topY - 100, r: 16, kind: "pair" });
-          }
-        }
+    function togglePause(){
+      if (game.state === "play"){
+        game.state = "pause";
+        ui.status.textContent = "Paused";
+      } else if (game.state === "pause"){
+        game.state = "play";
+        ui.status.textContent = "Playing";
       }
     }
 
     function restart(){
       obstacles = [];
-      world.scroll = 0;
-      world.speed = 270;
-      world.spawnEvery = 0.85;
-      world.spawnTimer = 0;
-      world.score = 0;
-      world.level = 1;
-      world.running = true;
-      world.gameOver = false;
-      world.lastT = performance.now();
+      coins = [];
+      particles = [];
+
+      game.state = "start";
+      game.scroll = 0;
+      game.speed = 290;
+      game.spawnTimer = 0;
+      game.spawnEvery = 0.88;
+      game.score = 0;
+      game.level = 1;
+      game.mult = 1.0;
+      game.combo = 0;
+      game.shake = 0;
 
       player.lane = 0;
       player.x = laneX(0, player.y);
       player.switching = false;
       player.jumping = false;
       player.z = 0;
+      player.vz = 0;
 
-      ui.status.textContent = "Go ✨";
+      ui.status.textContent = "Press Space to Start";
       ui.score.textContent = "0";
       ui.level.textContent = "1";
+      ui.mult.textContent = "x1.0";
     }
 
-    function endGame(){
-      world.gameOver = true;
-      world.running = false;
+    function gameOver(){
+      game.state = "over";
       ui.status.textContent = "Game Over";
+      game.shake = 14;
 
-      if (world.score > best){
-        best = world.score;
+      if (game.score > best){
+        best = game.score;
         localStorage.setItem(BEST_KEY, String(best));
         ui.best.textContent = String(best);
       }
     }
 
-    // Drawing: flags (Catalan + Spanish) as small banners on buildings
-    function drawFlag(x, y, w, h, type){
-      ctx.save();
-      ctx.globalAlpha = 0.92;
-      ctx.translate(x, y);
+    window.addEventListener("keydown", (e) => {
+      const k = (e.key || "").toLowerCase();
 
+      if (k === "arrowleft") { keys.left = true; requestLane(-1); }
+      if (k === "arrowright"){ keys.right = true; requestLane(+1); }
+
+      // Start + Jump on Space
+      if (k === " "){
+        e.preventDefault();
+        if (game.state === "start"){
+          game.state = "play";
+          ui.status.textContent = "Playing";
+          return;
+        }
+        if (game.state === "pause"){
+          // keep pause on P only
+          return;
+        }
+        if (game.state === "over"){
+          return;
+        }
+        tryJump();
+      }
+
+      if (k === "p"){
+        if (game.state === "play" || game.state === "pause") togglePause();
+      }
+
+      if (k === "r") restart();
+    });
+
+    window.addEventListener("keyup", (e) => {
+      const k = (e.key || "").toLowerCase();
+      if (k === "arrowleft") keys.left = false;
+      if (k === "arrowright") keys.right = false;
+    });
+
+    ui.btnRestart.addEventListener("click", restart);
+
+    ui.btnMusic.addEventListener("click", async () => {
+      if (!musicReady){
+        ui.status.textContent = "No music.mp3 found";
+        return;
+      }
+      if (audio.paused){
+        try { await audio.play(); ui.btnMusic.textContent = "Stop music"; }
+        catch { ui.status.textContent = "Click again to enable audio"; }
+      } else {
+        audio.pause();
+        ui.btnMusic.textContent = "Play music";
+      }
+    });
+
+    // Utility
+    function clamp(v,a,b){ return Math.max(a, Math.min(b, v)); }
+    function rand(a,b){ return a + Math.random()*(b-a); }
+    function lerp(a,b,t){ return a + (b-a)*t; }
+
+    function circleHit(ax, ay, ar, bx, by, br){
+      const dx = ax-bx, dy = ay-by;
+      return (dx*dx + dy*dy) <= (ar+br)*(ar+br);
+    }
+
+    // Visual: film grain/noise
+    function noise2(x, y){
+      // cheap hash
+      const s = Math.sin(x*12.9898 + y*78.233) * 43758.5453;
+      return s - Math.floor(s);
+    }
+
+    // Decorative world: buildings, lamps, banners, flags
+    const deco = {
+      buildings: [],
+      lamps: [],
+      banners: [],
+      init(){
+        this.buildings.length = 0;
+        this.lamps.length = 0;
+        this.banners.length = 0;
+
+        // Buildings on both sides (procedural)
+        for (let i=0;i<26;i++){
+          this.buildings.push({
+            side: Math.random()<0.5 ? "L" : "R",
+            baseY: rand(road.topY+20, road.botY-120),
+            h: rand(90, 260),
+            w: rand(50, 110),
+            depth: rand(0.35, 1.0),
+            hue: rand(0, 1),
+            hasBalcony: Math.random() < 0.55,
+            flag: Math.random() < 0.60 ? (Math.random() < 0.65 ? "catalan" : "spain") : null,
+          });
+        }
+
+        // Lamps along road
+        for (let i=0;i<20;i++){
+          this.lamps.push({
+            laneEdge: Math.random()<0.5 ? -1 : 1,
+            y: rand(road.topY+20, road.botY-80),
+            depth: rand(0.45, 1.0),
+          });
+        }
+
+        // Over-road banners (occasional)
+        for (let i=0;i<10;i++){
+          this.banners.push({
+            y: rand(road.topY+40, road.botY-200),
+            depth: rand(0.5, 1.0),
+            type: Math.random() < 0.6 ? "catalan" : "spain",
+          });
+        }
+      }
+    };
+
+    function paletteStone(hue, a){
+      // warm stone + terracotta + teal accents
+      const P = [
+        [246,224,186],
+        [223,186,146],
+        [199,154,110],
+        [160,121,88],
+        [33,192,209]
+      ];
+      const idx = Math.floor(hue * P.length) % P.length;
+      const [r,g,b] = P[idx];
+      return `rgba(${r},${g},${b},${a})`;
+    }
+
+    function drawFlag(x, y, w, h, type, alpha){
+      ctx.save();
+      ctx.globalAlpha = alpha;
       // pole
       ctx.strokeStyle = "rgba(255,255,255,.35)";
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(0, h);
+      ctx.moveTo(x, y);
+      ctx.lineTo(x, y+h);
       ctx.stroke();
 
-      ctx.translate(0, 2);
+      // cloth
+      const xx = x + 2;
+      const yy = y + 2;
+      const ww = w;
+      const hh = h;
+
+      // clip wave
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(xx, yy);
+      ctx.quadraticCurveTo(xx+ww*0.55, yy+hh*0.15, xx+ww, yy+hh*0.05);
+      ctx.quadraticCurveTo(xx+ww*0.55, yy+hh*0.55, xx+ww, yy+hh*0.40);
+      ctx.quadraticCurveTo(xx+ww*0.55, yy+hh*0.92, xx+ww, yy+hh*0.75);
+      ctx.lineTo(xx+ww, yy+hh);
+      ctx.lineTo(xx, yy+hh);
+      ctx.closePath();
+      ctx.clip();
 
       if (type === "catalan"){
-        // Senyera stripes
+        // stripes yellow/red
         const stripes = 6;
         for (let i=0;i<stripes;i++){
-          ctx.fillStyle = (i%2===0) ? "rgba(247,199,106,.95)" : "rgba(255,59,106,.95)";
-          ctx.fillRect(2, i*(h/stripes), w, (h/stripes));
+          ctx.fillStyle = (i%2===0) ? "rgba(243,196,108,.95)" : "rgba(255,47,90,.95)";
+          ctx.fillRect(xx, yy + i*(hh/stripes), ww, (hh/stripes));
         }
       } else {
-        // Spain-inspired (red/yellow/red)
-        ctx.fillStyle = "rgba(255,59,106,.95)";
-        ctx.fillRect(2, 0, w, h*0.28);
-        ctx.fillStyle = "rgba(247,199,106,.95)";
-        ctx.fillRect(2, h*0.28, w, h*0.44);
-        ctx.fillStyle = "rgba(255,59,106,.95)";
-        ctx.fillRect(2, h*0.72, w, h*0.28);
+        // red/yellow/red
+        ctx.fillStyle = "rgba(255,47,90,.95)";
+        ctx.fillRect(xx, yy, ww, hh*0.28);
+        ctx.fillStyle = "rgba(243,196,108,.95)";
+        ctx.fillRect(xx, yy+hh*0.28, ww, hh*0.44);
+        ctx.fillStyle = "rgba(255,47,90,.95)";
+        ctx.fillRect(xx, yy+hh*0.72, ww, hh*0.28);
       }
-
-      // little wave cut
-      ctx.globalCompositeOperation = "destination-in";
-      ctx.beginPath();
-      ctx.moveTo(2, 0);
-      ctx.quadraticCurveTo(w*0.55, h*0.18, w+2, h*0.04);
-      ctx.quadraticCurveTo(w*0.55, h*0.50, w+2, h*0.38);
-      ctx.quadraticCurveTo(w*0.55, h*0.86, w+2, h*0.72);
-      ctx.lineTo(w+2, h);
-      ctx.lineTo(2, h);
-      ctx.closePath();
-      ctx.fill();
 
       ctx.restore();
-      ctx.globalCompositeOperation = "source-over";
+      ctx.restore();
     }
 
-    // Background buildings (procedural)
-    const buildings = [];
-    function initBuildings(){
-      buildings.length = 0;
-      const count = 18;
-      for (let i=0;i<count;i++){
-        const side = Math.random() < 0.5 ? "L" : "R";
-        buildings.push({
-          side,
-          baseY: rand(road.topY + 10, road.botY - 120),
-          height: rand(80, 220),
-          width: rand(42, 90),
-          depth: rand(0.35, 1.0),   // parallax depth (smaller = further)
-          hue: rand(0, 1),          // choose palette variant
-          flag: Math.random() < 0.55 ? (Math.random()<0.6 ? "catalan" : "spain") : null
-        });
-      }
-    }
-
-    function buildingColor(hue, alpha){
-      // warm stone / terracotta / teal accents
-      const palette = [
-        `rgba(246, 224, 186, ${alpha})`,
-        `rgba(223, 186, 146, ${alpha})`,
-        `rgba(199, 154, 110, ${alpha})`,
-        `rgba(32, 199, 213, ${alpha})`
-      ];
-      const idx = Math.floor(hue * palette.length) % palette.length;
-      return palette[idx];
-    }
-
-    function drawBuildings(t){
-      // Parallax scroll: use world.scroll
-      const scroll = world.scroll;
-
-      for (const b of buildings){
-        const y = b.baseY + ((scroll * 0.28) * (1 - b.depth));
-        // wrap around to keep moving
-        let yy = y;
-        const span = (road.botY - road.topY);
+    function drawBuildings(scroll){
+      const span = (road.botY - road.topY);
+      for (const b of deco.buildings){
+        let yy = b.baseY + (scroll * 0.22) * (1 - b.depth);
         while (yy > road.botY) yy -= span;
 
-        const { left, w } = (() => {
-          const wAt = roadWidthAt(yy);
-          return { left: road.cx - wAt/2, w: wAt };
-        })();
-
-        // position building outside road edges
-        const offset = 14 + (1 - b.depth) * 24;
-        let x;
-        if (b.side === "L") x = left - offset - b.width;
-        else x = left + w + offset;
-
-        // scale with perspective: closer at bottom
         const persp = (yy - road.topY) / (road.botY - road.topY);
-        const scale = 0.55 + persp * 0.75;
-        const bw = b.width * scale;
-        const bh = b.height * scale;
+        const scale = 0.55 + persp*0.85;
 
-        // base rect
+        const bw = b.w * scale;
+        const bh = b.h * scale;
+
+        const left = roadLeftAt(yy);
+        const w = roadWAt(yy);
+
+        const offset = 16 + (1 - b.depth) * 26;
+        const x = b.side === "L" ? (left - offset - bw) : (left + w + offset);
+
         ctx.save();
-        ctx.globalAlpha = 0.85 * (0.55 + b.depth*0.45);
-        ctx.fillStyle = buildingColor(b.hue, 0.85);
+        ctx.globalAlpha = 0.88 * (0.60 + b.depth*0.40);
+
+        // building body
+        ctx.fillStyle = paletteStone(b.hue, 0.95);
         ctx.fillRect(x, yy - bh, bw, bh);
 
-        // windows
-        ctx.globalAlpha *= 0.9;
-        ctx.fillStyle = "rgba(8,12,18,.28)";
-        const wx = 10 * scale, wy = 14 * scale, ww = 10 * scale, wh = 12 * scale;
-        for (let r=0; r<6; r++){
-          for (let c=0; c<3; c++){
-            const px = x + wx + c*(ww + 8*scale);
-            const py = (yy - bh) + wy + r*(wh + 10*scale);
-            if (py + wh < yy - 8*scale) ctx.fillRect(px, py, ww, wh);
+        // subtle edge
+        ctx.strokeStyle = "rgba(255,255,255,.14)";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x, yy - bh, bw, bh);
+
+        // windows grid
+        ctx.fillStyle = "rgba(8,12,18,.32)";
+        const pad = 10*scale;
+        const ww = 10*scale, wh = 12*scale;
+        const gapX = 8*scale, gapY = 10*scale;
+
+        for (let r=0;r<7;r++){
+          for (let c=0;c<4;c++){
+            const px = x + pad + c*(ww+gapX);
+            const py = (yy-bh) + pad + r*(wh+gapY);
+            if (px+ww < x+bw-pad && py+wh < yy-8*scale){
+              // random lit window
+              const lit = (noise2(px*0.02, py*0.02) > 0.70);
+              ctx.fillStyle = lit ? "rgba(243,196,108,.28)" : "rgba(8,12,18,.34)";
+              ctx.fillRect(px, py, ww, wh);
+            }
           }
         }
 
-        // roof line
-        ctx.globalAlpha = 0.55;
-        ctx.strokeStyle = "rgba(255,255,255,.20)";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.moveTo(x, yy - bh);
-        ctx.lineTo(x + bw, yy - bh);
-        ctx.stroke();
+        // balconies
+        if (b.hasBalcony && persp > 0.25){
+          ctx.strokeStyle = "rgba(255,255,255,.22)";
+          ctx.fillStyle = "rgba(0,0,0,.16)";
+          const by = yy - bh + bh*0.55;
+          ctx.fillRect(x + bw*0.08, by, bw*0.84, 8*scale);
+          ctx.strokeRect(x + bw*0.08, by, bw*0.84, 8*scale);
+          // rails
+          ctx.globalAlpha *= 0.85;
+          for (let i=0;i<10;i++){
+            const rx = x + bw*0.10 + i*(bw*0.08);
+            ctx.beginPath();
+            ctx.moveTo(rx, by);
+            ctx.lineTo(rx, by - 14*scale);
+            ctx.stroke();
+          }
+          ctx.globalAlpha /= 0.85;
+        }
 
-        // flags
-        if (b.flag && persp > 0.25){
-          const fx = (b.side === "L") ? (x + bw - 8*scale) : (x + 8*scale);
-          const fy = yy - bh + 18*scale;
-          drawFlag(fx, fy, 22*scale, 28*scale, b.flag === "catalan" ? "catalan" : "spain");
+        // flags on some buildings
+        if (b.flag && persp > 0.28){
+          const fx = b.side === "L" ? (x + bw - 10*scale) : (x + 8*scale);
+          const fy = yy - bh + 16*scale;
+          drawFlag(fx, fy, 22*scale, 30*scale, b.flag, 0.95);
         }
 
         ctx.restore();
       }
     }
 
-    function drawSky(){
-      // subtle stars / grain
-      ctx.save();
-      ctx.globalAlpha = 0.22;
-      ctx.fillStyle = "rgba(255,255,255,.55)";
-      for (let i=0;i<38;i++){
-        const x = (i*173) % W;
-        const y = (i*97) % (H*0.55);
+    function drawLamps(scroll){
+      const span = (road.botY - road.topY);
+      for (const l of deco.lamps){
+        let yy = l.y + (scroll * 0.30) * (1 - l.depth);
+        while (yy > road.botY) yy -= span;
+
+        const persp = (yy - road.topY) / (road.botY - road.topY);
+        const scale = 0.55 + persp*0.85;
+
+        const left = roadLeftAt(yy);
+        const w = roadWAt(yy);
+        const edgeX = l.laneEdge < 0 ? left : (left + w);
+        const x = edgeX + (l.laneEdge < 0 ? -18*scale : 18*scale);
+
+        ctx.save();
+        ctx.globalAlpha = 0.70;
+        ctx.strokeStyle = "rgba(255,255,255,.20)";
+        ctx.lineWidth = 2;
+
+        // pole
         ctx.beginPath();
-        ctx.arc(x, y, (i%3)+0.6, 0, Math.PI*2);
+        ctx.moveTo(x, yy);
+        ctx.lineTo(x, yy - 70*scale);
+        ctx.stroke();
+
+        // arm
+        ctx.beginPath();
+        ctx.moveTo(x, yy - 60*scale);
+        ctx.lineTo(x + (l.laneEdge < 0 ? 22*scale : -22*scale), yy - 52*scale);
+        ctx.stroke();
+
+        // light glow
+        const lx = x + (l.laneEdge < 0 ? 24*scale : -24*scale);
+        const ly = yy - 50*scale;
+        const grd = ctx.createRadialGradient(lx, ly, 2, lx, ly, 22*scale);
+        grd.addColorStop(0, "rgba(243,196,108,.22)");
+        grd.addColorStop(1, "rgba(243,196,108,0)");
+        ctx.fillStyle = grd;
+        ctx.beginPath();
+        ctx.arc(lx, ly, 22*scale, 0, Math.PI*2);
         ctx.fill();
+
+        ctx.restore();
       }
-      ctx.restore();
+    }
+
+    function drawOverBanners(scroll){
+      const span = (road.botY - road.topY);
+      for (const b of deco.banners){
+        let yy = b.y + (scroll * 0.26) * (1 - b.depth);
+        while (yy > road.botY) yy -= span;
+
+        const persp = (yy - road.topY) / (road.botY - road.topY);
+        if (persp < 0.18 || persp > 0.65) continue;
+
+        const left = roadLeftAt(yy);
+        const w = roadWAt(yy);
+        const x = left - w*0.08;
+        const ww = w * 1.16;
+        const hh = 16 + persp*16;
+
+        ctx.save();
+        ctx.globalAlpha = 0.55;
+
+        // rope
+        ctx.strokeStyle = "rgba(255,255,255,.18)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(x, yy);
+        ctx.lineTo(x+ww, yy);
+        ctx.stroke();
+
+        // banner cloth
+        ctx.globalAlpha = 0.70;
+        if (b.type === "catalan"){
+          const stripes = 6;
+          for (let i=0;i<stripes;i++){
+            ctx.fillStyle = (i%2===0) ? "rgba(243,196,108,.55)" : "rgba(255,47,90,.55)";
+            ctx.fillRect(x, yy + i*(hh/stripes), ww, (hh/stripes));
+          }
+        } else {
+          ctx.fillStyle = "rgba(255,47,90,.55)";
+          ctx.fillRect(x, yy, ww, hh*0.28);
+          ctx.fillStyle = "rgba(243,196,108,.55)";
+          ctx.fillRect(x, yy+hh*0.28, ww, hh*0.44);
+          ctx.fillStyle = "rgba(255,47,90,.55)";
+          ctx.fillRect(x, yy+hh*0.72, ww, hh*0.28);
+        }
+
+        ctx.restore();
+      }
     }
 
     function drawRoad(t){
       // road polygon
       ctx.save();
-      ctx.fillStyle = "rgba(0,0,0,.24)";
+      ctx.fillStyle = "rgba(0,0,0,.26)";
       ctx.beginPath();
       ctx.moveTo(road.cx - road.topW/2, road.topY);
       ctx.lineTo(road.cx + road.topW/2, road.topY);
@@ -670,30 +806,30 @@
       ctx.closePath();
       ctx.fill();
 
-      // edges glow
-      ctx.strokeStyle = "rgba(255,255,255,.10)";
+      // edges
+      ctx.strokeStyle = "rgba(255,255,255,.11)";
       ctx.lineWidth = 3;
       ctx.stroke();
 
-      // dashed lane separators (2 lines)
+      // lane separators (2 lines)
       ctx.strokeStyle = "rgba(255,255,255,.16)";
       ctx.lineWidth = 2;
 
-      const dash = 18, gap = 16;
-      const offset = (t * world.speed * 0.10) % (dash + gap);
+      const dash = 20, gap = 18;
+      const offset = (t * game.speed * 0.10) % (dash+gap);
       ctx.setLineDash([dash, gap]);
       ctx.lineDashOffset = -offset;
 
       const step = 16;
       for (let y = road.topY; y <= road.botY; y += step){
         const left = roadLeftAt(y);
-        const w = roadWidthAt(y);
+        const w = roadWAt(y);
         const lw = w/3;
         const x1 = left + lw;
         const x2 = left + lw*2;
 
         const persp = (y - road.topY) / (road.botY - road.topY);
-        const seg = 10 + persp*18;
+        const seg = 10 + persp*22;
 
         ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x1, y + seg); ctx.stroke();
         ctx.beginPath(); ctx.moveTo(x2, y); ctx.lineTo(x2, y + seg); ctx.stroke();
@@ -701,6 +837,41 @@
 
       ctx.setLineDash([]);
       ctx.restore();
+    }
+
+    function spawnParticles(x, y, n, strength){
+      for (let i=0;i<n;i++){
+        particles.push({
+          x, y,
+          vx: rand(-1, 1) * strength,
+          vy: rand(-1, 1) * strength,
+          life: rand(0.25, 0.55),
+          t: 0
+        });
+      }
+    }
+
+    function drawParticles(dt){
+      for (let i=particles.length-1;i>=0;i--){
+        const p = particles[i];
+        p.t += dt;
+        p.x += p.vx * 60 * dt;
+        p.y += p.vy * 60 * dt;
+        p.vy += 0.6 * dt;
+
+        const a = 1 - (p.t / p.life);
+        if (a <= 0){
+          particles.splice(i,1);
+          continue;
+        }
+        ctx.save();
+        ctx.globalAlpha = a * 0.6;
+        ctx.fillStyle = "rgba(243,196,108,.9)";
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.2, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
     }
 
     function drawCircleImage(img, x, y, r){
@@ -723,75 +894,195 @@
     }
 
     function drawPlayer(){
-      const baseX = player.x;
-      const baseY = player.y;
-      const y = baseY - player.z; // jump lifts the sprite
-
-      // shadow (smaller when jumping)
-      const shadowScale = clamp(1 - (player.z / 180), 0.55, 1);
+      // shadow
+      const shadowScale = clamp(1 - (player.z / 200), 0.55, 1);
       ctx.save();
-      ctx.globalAlpha = 0.35;
-      ctx.fillStyle = "rgba(0,0,0,.45)";
+      ctx.globalAlpha = 0.30;
+      ctx.fillStyle = "rgba(0,0,0,.55)";
       ctx.beginPath();
-      ctx.ellipse(baseX, baseY + 22, 34*shadowScale, 12*shadowScale, 0, 0, Math.PI*2);
+      ctx.ellipse(player.x, player.y + 26, 34*shadowScale, 12*shadowScale, 0, 0, Math.PI*2);
       ctx.fill();
       ctx.restore();
 
+      const y = player.y - player.z;
+
       if (hasPlayer){
-        drawCircleImage(imgPlayer, baseX, y, player.r);
+        drawCircleImage(imgPlayer, player.x, y, player.r);
       } else {
         ctx.save();
-        ctx.fillStyle = "rgba(255,59,106,.16)";
-        ctx.beginPath(); ctx.arc(baseX,y,player.r,0,Math.PI*2); ctx.fill();
+        ctx.fillStyle = "rgba(255,47,90,.16)";
+        ctx.beginPath(); ctx.arc(player.x,y,player.r,0,Math.PI*2); ctx.fill();
         ctx.fillStyle = "rgba(255,255,255,.92)";
-        ctx.font = "24px system-ui";
+        ctx.font = "22px system-ui";
         ctx.textAlign="center"; ctx.textBaseline="middle";
-        ctx.fillText("✿", baseX, y+1);
+        ctx.fillText("P", player.x, y);
         ctx.restore();
       }
     }
 
     function drawObstacle(o){
-      // obstacle grows with perspective
       const persp = (o.y - road.topY) / (road.botY - road.topY);
-      const r = 14 + persp * 28;
+      const r = 14 + persp * 30;
       o.r = r;
 
       const x = laneX(o.lane, o.y);
+
+      // small warning light at higher speeds
+      if (persp < 0.25 && game.level >= 6){
+        ctx.save();
+        ctx.globalAlpha = 0.18 + 0.08*Math.sin(game.t*10);
+        ctx.fillStyle = "rgba(255,47,90,1)";
+        ctx.beginPath();
+        ctx.arc(x, o.y, 18, 0, Math.PI*2);
+        ctx.fill();
+        ctx.restore();
+      }
 
       if (hasObstacle){
         drawCircleImage(imgObstacle, x, o.y, r);
       } else {
         ctx.save();
-        ctx.fillStyle = "rgba(32,199,213,.14)";
+        ctx.fillStyle = "rgba(33,192,209,.16)";
         ctx.beginPath(); ctx.arc(x,o.y,r,0,Math.PI*2); ctx.fill();
-        ctx.fillStyle = "rgba(255,255,255,.88)";
-        ctx.font = "22px system-ui";
+        ctx.fillStyle = "rgba(255,255,255,.92)";
+        ctx.font = "18px system-ui";
         ctx.textAlign="center"; ctx.textBaseline="middle";
-        ctx.fillText("☁️", x, o.y+1);
+        ctx.fillText("X", x, o.y);
         ctx.restore();
       }
     }
 
-    function drawOverlay(){
-      if (!world.gameOver) return;
+    function drawCoin(c){
+      const x = laneX(c.lane, c.y);
+      const persp = (c.y - road.topY) / (road.botY - road.topY);
+      const r = 7 + persp*12;
+
       ctx.save();
-      ctx.fillStyle = "rgba(0,0,0,.35)";
-      ctx.fillRect(0, H/2 - 70, W, 140);
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = "rgba(243,196,108,.88)";
+      ctx.beginPath();
+      ctx.arc(x, c.y, r, 0, Math.PI*2);
+      ctx.fill();
 
-      ctx.fillStyle = "rgba(255,255,255,.92)";
-      ctx.font = "bold 34px system-ui";
-      ctx.textAlign="center";
-      ctx.fillText("Game Over", W/2, H/2 - 10);
+      ctx.globalAlpha = 0.35;
+      ctx.strokeStyle = "rgba(255,255,255,.35)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(x, c.y, r, 0, Math.PI*2);
+      ctx.stroke();
 
-      ctx.fillStyle = "rgba(255,255,255,.75)";
-      ctx.font = "16px system-ui";
-      ctx.fillText("R ou Restart • Tu peux recommencer quand tu veux ✨", W/2, H/2 + 22);
+      // inner shine
+      ctx.globalAlpha = 0.18;
+      ctx.fillStyle = "rgba(255,255,255,.9)";
+      ctx.beginPath();
+      ctx.arc(x - r*0.25, c.y - r*0.25, r*0.35, 0, Math.PI*2);
+      ctx.fill();
+
       ctx.restore();
+
+      c.r = r;
+      c.x = x;
     }
 
-    function update(dt){
-      // Lane switch interpolation
+    function drawOverlay(){
+      if (game.state === "start"){
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,.25)";
+        ctx.fillRect(0, 0, W, H);
+
+        ctx.fillStyle = "rgba(255,255,255,.92)";
+        ctx.font = "700 40px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("Press Space to Start", W/2, H*0.44);
+
+        ctx.fillStyle = "rgba(255,255,255,.72)";
+        ctx.font = "16px system-ui";
+        ctx.fillText("Left/Right to change lane. Space to jump. P to pause.", W/2, H*0.44 + 34);
+
+        ctx.restore();
+      }
+
+      if (game.state === "pause"){
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,.30)";
+        ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = "rgba(255,255,255,.92)";
+        ctx.font = "700 42px system-ui";
+        ctx.textAlign = "center";
+        ctx.fillText("Paused", W/2, H*0.46);
+        ctx.fillStyle = "rgba(255,255,255,.72)";
+        ctx.font = "16px system-ui";
+        ctx.fillText("Press P to resume", W/2, H*0.46 + 30);
+        ctx.restore();
+      }
+
+      if (game.state === "over"){
+        ctx.save();
+        ctx.fillStyle = "rgba(0,0,0,.35)";
+        ctx.fillRect(0, H/2 - 80, W, 160);
+        ctx.fillStyle = "rgba(255,255,255,.92)";
+        ctx.font = "700 46px system-ui";
+        ctx.textAlign="center";
+        ctx.fillText("Game Over", W/2, H/2 - 12);
+        ctx.fillStyle = "rgba(255,255,255,.72)";
+        ctx.font = "16px system-ui";
+        ctx.fillText("Press R to restart", W/2, H/2 + 26);
+        ctx.restore();
+      }
+    }
+
+    // Spawning & difficulty
+    function spawnObstaclePattern(){
+      // Spawn logic inspired by endless runners:
+      // - early: single
+      // - mid: sometimes two obstacles in different lanes
+      // - late: pairs that force quick lane change or jump timing
+
+      const lvl = game.level;
+
+      // helper pick lanes
+      const l1 = lanes[Math.floor(Math.random()*3)];
+      const l2 = (() => {
+        let t = l1;
+        while (t === l1) t = lanes[Math.floor(Math.random()*3)];
+        return t;
+      })();
+
+      // always at least one
+      obstacles.push({ lane: l1, y: road.topY - 50, r: 16 });
+
+      // at higher levels: sometimes second obstacle
+      const pDouble = clamp(0.05 + (lvl-3)*0.03, 0, 0.58);
+      if (lvl >= 4 && Math.random() < pDouble){
+        obstacles.push({ lane: l2, y: road.topY - 90, r: 16 });
+      }
+
+      // sometimes add a coin line as reward path
+      if (Math.random() < 0.75){
+        const coinLane = Math.random() < 0.6 ? l2 : l1;
+        const count = (lvl < 6) ? 2 : (lvl < 12 ? 3 : 4);
+        for (let i=0;i<count;i++){
+          coins.push({ lane: coinLane, y: road.topY - 120 - i*46, r: 10, x: 0 });
+        }
+      }
+    }
+
+    function updateDifficulty(){
+      // Level grows with score; speed and spawn rate increase
+      const lvl = 1 + Math.floor(game.score / 260);
+      game.level = clamp(lvl, 1, 40);
+
+      const k = clamp((game.level - 1) / 22, 0, 1);
+      game.speed = 290 + k * 560;           // 290 -> 850
+      game.spawnEvery = 0.92 - k * 0.48;    // 0.92 -> 0.44
+
+      // multiplier: increase with coin combo
+      const targetMult = 1 + clamp(game.combo / 18, 0, 2.5);
+      game.mult = lerp(game.mult, targetMult, 0.06);
+    }
+
+    function updatePlayer(dt){
+      // lane switching
       if (player.switching){
         player.switchT += dt;
         const a = Math.min(1, player.switchT / player.switchDuration);
@@ -804,104 +1095,174 @@
         player.x = laneX(player.lane, player.y);
       }
 
-      // Jump physics
+      // jump physics
       if (player.jumping){
-        player.z += player.jumpVy * dt;
-        player.jumpVy -= player.gravity * dt;
-
-        if (player.z > player.zMax) player.zMax = player.z;
-
+        player.z += player.vz * dt;
+        player.vz -= player.gravity * dt;
         if (player.z <= 0){
           player.z = 0;
+          player.vz = 0;
           player.jumping = false;
-          player.jumpVy = 0;
         }
       }
+    }
 
-      if (!world.running || world.gameOver) return;
+    function updateWorld(dt){
+      if (game.state !== "play") return;
 
-      // difficulty ramp
-      world.score += Math.floor(dt * 16);
-      const lvl = 1 + Math.floor(world.score / 220); // level up every ~220 pts
-      world.level = clamp(lvl, 1, 30);
+      // scoring
+      game.score += Math.floor(dt * 18 * game.mult);
+      updateDifficulty();
 
-      // speed increases + spawn faster
-      const k = clamp((world.level - 1) / 18, 0, 1);
-      world.speed = 270 + k * 520;                 // 270 -> 790
-      world.spawnEvery = 0.88 - k * 0.42;          // 0.88 -> 0.46
+      // scroll
+      game.scroll += game.speed * dt;
 
-      // scroll used for background parallax
-      world.scroll += world.speed * dt;
-
-      // spawn obstacles
-      world.spawnTimer += dt;
-      if (world.spawnTimer >= world.spawnEvery){
-        world.spawnTimer = 0;
-        spawnObstacle();
+      // spawn
+      game.spawnTimer += dt;
+      if (game.spawnTimer >= game.spawnEvery){
+        game.spawnTimer = 0;
+        spawnObstaclePattern();
       }
 
       // move obstacles
       for (let i=obstacles.length-1;i>=0;i--){
         const o = obstacles[i];
-        o.y += world.speed * dt;
+        o.y += game.speed * dt;
 
-        // collision: only if player not high enough
-        // if jumping and height is significant, allow "over" obstacles
-        const playerY = player.y - player.z;
-        const playerR = player.r * 0.86;
-        const obsX = laneX(o.lane, o.y);
-        const obsR = o.r * 0.86;
+        // collision:
+        // if player is sufficiently high (jump), allow pass
+        const canHit = (player.z < 68);
 
-        const canHit = (player.z < 62); // above ~62px => clears obstacle
-        if (canHit && circleHit(player.x, playerY, playerR, obsX, o.y, obsR)){
-          endGame();
+        const ox = laneX(o.lane, o.y);
+        const py = player.y - player.z;
+
+        if (canHit && circleHit(player.x, py, player.r*0.86, ox, o.y, o.r*0.86)){
+          spawnParticles(player.x, player.y - player.z, 24, 2.2);
+          gameOver();
           return;
         }
 
-        if (o.y > H + 100) obstacles.splice(i, 1);
+        if (o.y > H + 120) obstacles.splice(i,1);
       }
+
+      // move coins + collect
+      for (let i=coins.length-1;i>=0;i--){
+        const c = coins[i];
+        c.y += game.speed * dt;
+
+        // coin collision a bit forgiving
+        const px = player.x;
+        const py = player.y - player.z;
+        const cx = laneX(c.lane, c.y);
+
+        const r = 8 + ((c.y - road.topY)/(road.botY-road.topY))*14;
+        const collected = circleHit(px, py, player.r*0.75, cx, c.y, r*0.95);
+
+        if (collected){
+          coins.splice(i,1);
+          game.combo += 1;
+          game.score += 40; // instant bonus
+          spawnParticles(cx, c.y, 12, 1.7);
+          continue;
+        }
+
+        if (c.y > H + 120){
+          coins.splice(i,1);
+        }
+      }
+
+      // combo decay if no coins for a while
+      game.combo = Math.max(0, game.combo - dt*0.8);
     }
 
-    function render(t){
-      ctx.clearRect(0,0,W,H);
+    function render(dt){
+      // camera shake on impact
+      let sx = 0, sy = 0;
+      if (game.shake > 0){
+        sx = rand(-game.shake, game.shake);
+        sy = rand(-game.shake, game.shake);
+        game.shake = Math.max(0, game.shake - 40*dt);
+      }
 
-      // background polish
       ctx.save();
-      const g = ctx.createRadialGradient(W*0.5, H*0.40, 60, W*0.5, H*0.5, H*0.95);
+      ctx.translate(sx, sy);
+
+      ctx.clearRect(-50, -50, W+100, H+100);
+
+      // vignette + atmosphere
+      ctx.save();
+      const g = ctx.createRadialGradient(W*0.5, H*0.42, 60, W*0.5, H*0.5, H*0.95);
       g.addColorStop(0, "rgba(255,255,255,.02)");
-      g.addColorStop(1, "rgba(0,0,0,.12)");
+      g.addColorStop(1, "rgba(0,0,0,.14)");
       ctx.fillStyle = g;
       ctx.fillRect(0,0,W,H);
       ctx.restore();
 
-      drawSky();
-      drawBuildings(t);
-      drawRoad(t);
+      // background layers
+      drawBuildings(game.scroll);
+      drawLamps(game.scroll);
+      drawOverBanners(game.scroll);
 
-      // obstacles then player
+      // road
+      drawRoad(game.t);
+
+      // coins (behind player usually okay)
+      for (const c of coins) drawCoin(c);
+
+      // obstacles
       for (const o of obstacles) drawObstacle(o);
+
+      // particles
+      drawParticles(dt);
+
+      // player
       drawPlayer();
+
+      // film grain overlay (subtle)
+      ctx.save();
+      ctx.globalAlpha = 0.08;
+      ctx.fillStyle = "rgba(255,255,255,.50)";
+      // sparse speckles
+      for (let i=0;i<80;i++){
+        const x = (i*173 + (game.t*40)) % W;
+        const y = (i*97 + (game.t*35)) % H;
+        const r = (i%3)+0.6;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      // UI overlay screens
       drawOverlay();
 
-      // UI
-      ui.score.textContent = String(world.score);
-      ui.level.textContent = String(world.level);
+      ctx.restore();
     }
 
     function loop(now){
-      const dt = Math.min(0.033, (now - world.lastT) / 1000);
-      world.lastT = now;
+      const dt = Math.min(0.033, (now - game.lastT)/1000);
+      game.lastT = now;
+      game.t += dt;
 
-      update(dt);
-      render(now/1000);
+      updatePlayer(dt);
+      updateWorld(dt);
+
+      render(dt);
+
+      // UI text updates
+      ui.score.textContent = String(game.score);
+      ui.level.textContent = String(game.level);
+      ui.mult.textContent = "x" + game.mult.toFixed(1);
 
       requestAnimationFrame(loop);
     }
 
-    // Start
-    initBuildings();
+    // Init
+    deco.init();
+    restart();
+
     loadAssets().then(() => {
-      ui.status.textContent = "Go ✨";
+      if (ui.status.textContent === "Loading") ui.status.textContent = "Press Space to Start";
       requestAnimationFrame(loop);
     });
   </script>
